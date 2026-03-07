@@ -6,8 +6,6 @@ import { FileText, Type, Book, Cpu, BarChart3, Users, PlayCircle, PlusCircle, Sp
 
 export default function TeacherDashboard() {
     const [stats, setStats] = useState({ totalQuizzes: 0, totalAttempts: 0, averageScore: 0 });
-    const [quizzes, setQuizzes] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [showOptions, setShowOptions] = useState(false);
 
     useEffect(() => {
@@ -22,11 +20,8 @@ export default function TeacherDashboard() {
                     : 0;
 
                 setStats({ totalQuizzes, totalAttempts, averageScore });
-                setQuizzes(quizArray);
             } catch (err) {
                 console.error('Error fetching dashboard stats', err);
-            } finally {
-                setLoading(false);
             }
         };
         fetchStats();
@@ -45,16 +40,9 @@ export default function TeacherDashboard() {
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1000px] h-[1000px] bg-[#ff6b00]/5 rounded-full blur-[150px] pointer-events-none -z-10 animate-pulse"></div>
 
                 {/* Hero Section */}
-                <div className="flex flex-col items-center justify-center min-h-[40vh] text-center space-y-10 pt-10">
+                <div className="flex flex-col items-center justify-center min-h-[70vh] text-center space-y-10">
                     {!showOptions ? (
-                        <div className="space-y-12 animate-in fade-in zoom-in duration-500 w-full max-w-4xl">
-                            <div className="space-y-4">
-                                <h1 className="text-6xl font-black text-white italic tracking-tighter uppercase leading-[0.9]">
-                                    Ready to <span className="text-[#ff6b00]">Engage</span>?
-                                </h1>
-                                <p className="text-slate-500 font-bold uppercase tracking-[0.3em] text-sm italic">Create dynamic assessments in seconds</p>
-                            </div>
-
+                        <div className="space-y-12 animate-in fade-in zoom-in duration-500">
                             <button
                                 onClick={() => setShowOptions(true)}
                                 className="group relative bg-[#ff6b00] text-white px-20 py-10 rounded-[3rem] font-black text-4xl italic tracking-tighter hover:scale-105 transition-all shadow-[0_32px_64px_-16px_rgba(255,107,0,0.3)] active:scale-95 flex items-center gap-8 mx-auto overflow-hidden border-4 border-white/20"
@@ -100,91 +88,7 @@ export default function TeacherDashboard() {
                         </div>
                     )}
                 </div>
-
-                {/* Previous Quizzes Section */}
-                <div className="mt-20 space-y-10 animate-in fade-in slide-in-from-bottom-5 duration-700 delay-300">
-                    <div className="flex items-end justify-between border-b border-white/5 pb-6">
-                        <div>
-                            <h2 className="text-5xl font-black text-white tracking-tight italic uppercase">Previous <span className="text-[#ff6b00]">Sessions</span></h2>
-                            <p className="text-slate-500 font-bold mt-2 uppercase tracking-widest text-sm italic">Review results and student rankings</p>
-                        </div>
-                        <Link to="/my-quizzes" className="bg-white/5 hover:bg-white/10 px-8 py-4 rounded-2xl border border-white/10 text-slate-400 hover:text-[#ff6b00] font-black uppercase tracking-tighter italic transition-all active:scale-95 flex items-center gap-3">
-                            Full Library <PlusCircle size={20} />
-                        </Link>
-                    </div>
-
-                    {loading ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {[1, 2].map(i => (
-                                <div key={i} className="bg-white/5 rounded-[3rem] border border-white/10 p-12 animate-pulse h-80 ring-1 ring-white/5"></div>
-                            ))}
-                        </div>
-                    ) : quizzes.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {quizzes.slice(0, 4).map((quiz) => (
-                                <div key={quiz.quizId} className="group bg-white/5 border border-white/10 rounded-[3rem] p-10 hover:bg-white/10 transition-all duration-500 relative overflow-hidden ring-1 ring-white/5 flex flex-col">
-                                    <div className="flex items-start justify-between mb-8">
-                                        <div className="space-y-2">
-                                            <h3 className="text-3xl font-black text-white italic tracking-tighter uppercase leading-none group-hover:text-[#ff6b00] transition-colors">{quiz.title}</h3>
-                                            <div className="flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 italic">
-                                                <span className="flex items-center gap-1.5"><Clock size={12} className="text-[#ff6b00]" /> {quiz.results?.[0]?.completedAt ? new Date(quiz.results[0].completedAt).toLocaleDateString() : 'Recent'}</span>
-                                                <span className="flex items-center gap-1.5"><Users size={12} className="text-[#ff6b00]" /> {quiz.completionCount} Students</span>
-                                            </div>
-                                        </div>
-                                        <Link to={`/leaderboard/${quiz.quizId}`} className="p-4 bg-white/5 rounded-2xl border border-white/10 text-slate-400 hover:text-white hover:bg-[#ff6b00] transition-all">
-                                            <Sparkles size={24} />
-                                        </Link>
-                                    </div>
-
-                                    {/* Mini Leaderboard */}
-                                    <div className="space-y-3 mt-auto">
-                                        <div className="text-[10px] font-black text-slate-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                            Final Leaderboard <Trophy size={14} className="text-[#ff6b00]" />
-                                        </div>
-                                        {quiz.results.length > 0 ? (
-                                            <div className="space-y-2">
-                                                {quiz.results.slice(0, 3).map((res, idx) => (
-                                                    <div key={idx} className="bg-white/5 rounded-2xl p-4 flex items-center justify-between group/row hover:bg-white/10 transition-colors border border-white/5">
-                                                        <div className="flex items-center gap-4">
-                                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black italic shadow-sm
-                                                                ${idx === 0 ? 'bg-yellow-500/20 text-yellow-500' :
-                                                                    idx === 1 ? 'bg-slate-300/20 text-slate-300' :
-                                                                        'bg-amber-600/20 text-amber-600'}`}>
-                                                                {idx + 1}
-                                                            </div>
-                                                            <span className="font-black text-white uppercase italic tracking-tighter">{res.studentName}</span>
-                                                        </div>
-                                                        <span className="text-sm font-black text-[#ff6b00] italic">{res.score} pts</span>
-                                                    </div>
-                                                ))}
-                                                {quiz.results.length > 3 && (
-                                                    <p className="text-center text-[10px] font-black text-slate-600 uppercase italic mt-4 tracking-widest">
-                                                        + {quiz.results.length - 3} more participants
-                                                    </p>
-                                                )}
-                                            </div>
-                                        ) : (
-                                            <div className="bg-white/5 rounded-2xl p-8 text-center border border-dashed border-white/10">
-                                                <p className="text-xs font-black text-slate-600 uppercase italic tracking-widest">No participants yet</p>
-                                            </div>
-                                        )}
-                                    </div>
-
-                                    <div className="absolute -right-10 -top-10 text-white/5 transform -rotate-12 group-hover:rotate-0 transition-transform duration-1000">
-                                        <Activity size={180} />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="bg-white/5 rounded-[3rem] border border-white/10 p-24 text-center ring-1 ring-white/5">
-                            <h3 className="text-3xl font-black text-slate-700 uppercase italic tracking-tighter mb-4">No Session History</h3>
-                            <p className="text-slate-500 font-bold text-sm tracking-widest uppercase italic">Your quiz history will appear here once you host a session</p>
-                        </div>
-                    )}
-                </div>
             </div>
         </DashboardLayout>
     );
 }
-
