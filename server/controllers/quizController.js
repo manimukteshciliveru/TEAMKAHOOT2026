@@ -313,9 +313,11 @@ exports.submitQuiz = async (req, res) => {
         }
 
         let score = 0;
+        let totalTimeTaken = 0;
         const formattedAnswers = quiz.questions.map((q, idx) => {
             const selectedOption = answers[idx]?.selectedOption || '';
-            const isCorrect = selectedOption === q.correctAnswer;
+            const isCorrect = selectedOption.trim().toLowerCase() === q.correctAnswer.trim().toLowerCase();
+            const qTimeTaken = 0; // Standard submit doesn't track per-question time yet
             if (isCorrect) {
                 score += q.points || 10;
             }
@@ -323,7 +325,8 @@ exports.submitQuiz = async (req, res) => {
                 questionText: q.questionText,
                 selectedOption,
                 correctOption: q.correctAnswer,
-                isCorrect
+                isCorrect,
+                timeTaken: qTimeTaken
             };
         });
 
@@ -331,6 +334,7 @@ exports.submitQuiz = async (req, res) => {
 
         if (existingResult) {
             existingResult.score = score;
+            existingResult.totalTimeTaken = totalTimeTaken;
             existingResult.answers = formattedAnswers;
             existingResult.totalQuestions = quiz.questions.length;
             existingResult.status = 'completed';
@@ -343,10 +347,11 @@ exports.submitQuiz = async (req, res) => {
             quiz: quizId,
             student: req.user.id,
             score,
+            totalTimeTaken,
             totalQuestions: quiz.questions.length,
             answers: formattedAnswers,
             status: 'completed',
-            startedAt: Date.now(), // Fallback if no start time recorded
+            startedAt: Date.now(),
             completedAt: Date.now()
         });
 
@@ -370,7 +375,7 @@ exports.getLeaderboard = async (req, res) => {
         // Fetch all results for this quiz to calculate rankings and stats
         const allResults = await Result.find({ quiz: req.params.quizId })
             .populate('student', 'username email')
-            .sort({ score: -1, completedAt: 1 });
+            .sort({ score: -1, totalTimeTaken: 1, completedAt: 1 });
 
         if (allResults.length === 0) {
             return res.json({
@@ -400,6 +405,7 @@ exports.getLeaderboard = async (req, res) => {
                 studentId: r.student._id,
                 username: r.student.username,
                 currentScore: r.score,
+                totalTimeTaken: r.totalTimeTaken || 0,
                 answeredQuestions: r.answers.length,
                 rank: index + 1
             }));

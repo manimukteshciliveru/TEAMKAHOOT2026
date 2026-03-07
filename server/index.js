@@ -50,7 +50,7 @@ io.on('connection', (socket) => {
         const participants = roomParticipants.get(quizId);
         const existingIdx = participants.findIndex(p => p.username === user.username);
 
-        const userData = { ...user, socketId: socket.id, isOnline: true };
+        const userData = { ...user, socketId: socket.id };
         if (existingIdx !== -1) {
             participants[existingIdx] = userData;
         } else if (user.username && user.username.toLowerCase() !== 'student') {
@@ -86,47 +86,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    const finalizeQuiz = async (quizId) => {
-        try {
-            const Quiz = require('./models/Quiz');
-            const Result = require('./models/Result');
-
-            // 1. Get current state to capture leaderboard
-            const state = roomState.get(quizId.toString());
-            const finalLeaderboard = state?.leaderboard || [];
-            const finalInsights = state?.liveInsights || null;
-
-            // 2. Mark quiz as finished and store final standings
-            await Quiz.findByIdAndUpdate(quizId, {
-                status: 'finished',
-                isActive: false,
-                finalLeaderboard,
-                finalInsights
-            });
-
-            // 3. Finalize all in-progress student results
-            const updateResult = await Result.updateMany(
-                { quiz: quizId, status: 'in-progress' },
-                {
-                    $set: {
-                        status: 'completed',
-                        completedAt: Date.now()
-                    }
-                }
-            );
-
-            console.log(`Quiz ${quizId} finalized. Standings saved. Updated ${updateResult.modifiedCount} results.`);
-
-            // 4. Cleanup state
-            roomState.delete(quizId.toString());
-
-            // 5. Notify all in room
-            io.to(quizId).emit('quiz_ended');
-        } catch (err) {
-            console.error('Error in finalizeQuiz:', err);
-        }
-    };
-
     socket.on('start_quiz', async (quizId) => {
         try {
             const Quiz = require('./models/Quiz');
@@ -150,15 +109,21 @@ io.on('connection', (socket) => {
             io.to(quizId).emit('quiz_started');
             io.to(quizId).emit('sync_timer', { timeLeft: Math.max(0, Math.ceil((endTime - Date.now()) / 1000)) });
 
-            // Auto-terminate when global timer expires
+            // Auto-terminate when global timer expires (for duration-based quizzes)
             if (quiz.duration > 0) {
                 setTimeout(async () => {
                     const currentState = roomState.get(quizId.toString());
                     if (currentState && currentState.status !== 'finished') {
-                        await finalizeQuiz(quizId);
+                        roomState.delete(quizId.toString());
+                        try {
+                            await Quiz.findByIdAndUpdate(quizId, { status: 'finished' });
+                        } catch (err2) {
+                            console.error('Error auto-finishing quiz:', err2);
+                        }
+                        io.to(quizId).emit('quiz_ended');
                         console.log(`Quiz ${quizId} auto-terminated after global timer expired.`);
                     }
-                }, durationMs + 3000);
+                }, durationMs + 3000); // small buffer
             }
         } catch (err) {
             console.error('Error starting quiz:', err);
@@ -166,7 +131,30 @@ io.on('connection', (socket) => {
     });
 
     socket.on('end_quiz', async (quizId) => {
-        await finalizeQuiz(quizId);
+        roomState.delete(quizId);
+        try {
+            const Quiz = require('./models/Quiz');
+            const Result = require('./models/Result');
+
+            // 1. Mark quiz as finished
+            await Quiz.findByIdAndUpdate(quizId, { status: 'finished' });
+
+            // 2. Finalize all in-progress student results
+            const updateResult = await Result.updateMany(
+                { quiz: quizId, status: 'in-progress' },
+                {
+                    $set: {
+                        status: 'completed',
+                        completedAt: Date.now()
+                    }
+                }
+            );
+            console.log(`Quiz ${quizId} ended. Finalized ${updateResult.modifiedCount} results.`);
+
+            io.to(quizId).emit('quiz_ended');
+        } catch (err) {
+            console.error('Error ending quiz:', err);
+        }
     });
 
     // Add question to live quiz
@@ -212,7 +200,7 @@ io.on('connection', (socket) => {
 
             roomState.set(quizId, { ...state, currentQuestion: parseInt(questionIndex) });
 
-            io.to(quizId).emit('change_question', { questionIndex: parseInt(questionIndex) });
+            io.to(quizId).emit('change_question', { questionIndex });
             if (endTime) io.to(quizId).emit('sync_timer', { timeLeft: Math.max(0, Math.ceil((endTime - Date.now()) / 1000)) });
         } catch (err) {
             console.error('Error changing question:', err);
@@ -236,7 +224,7 @@ io.on('connection', (socket) => {
         const state = roomState.get(quizId);
         if (state && state.endTime) {
             state.endTime += (additionalSeconds * 1000);
-            roomState.set(quizId, state);
+            roomState.set(quizId, { ...state, endTime: state.endTime });
 
             const timeLeft = Math.max(0, Math.ceil((state.endTime - Date.now()) / 1000));
             io.to(quizId).emit('timer_update', { additionalSeconds });
@@ -262,29 +250,32 @@ io.on('connection', (socket) => {
         try {
             const Quiz = require('./models/Quiz');
             const Result = require('./models/Result');
-            const User = require('./models/User');
 
             const quiz = await Quiz.findById(quizId);
-            // Populate student to get username for progress update
+            if (!quiz) return;
+
+            // Calculate time taken for this question
+            const timerMax = quiz.duration > 0 ? (quiz.duration * 60) : (quiz.timerPerQuestion || 30);
+            const qTimeTaken = Math.max(0, timerMax - (timeRemaining || 0));
+
             let result = await Result.findOne({ quiz: quizId, student: studentId }).populate('student', 'username');
 
             if (!result) {
-                // Create new result if doesn't exist
                 result = new Result({
                     quiz: quizId,
                     student: studentId,
                     score: 0,
+                    totalTimeTaken: 0,
                     totalQuestions: quiz.questions.length,
                     answers: []
                 });
             }
 
-            if (quiz && quiz.questions[questionIndex]) {
+            if (quiz.questions[questionIndex]) {
                 const question = quiz.questions[questionIndex];
-                const isCorrect = answer === question.correctAnswer;
+                const isCorrect = answer.trim().toLowerCase() === question.correctAnswer.trim().toLowerCase();
                 const points = isCorrect ? (question.points || 10) : 0;
 
-                // Add or update answer for this question
                 const existingAnswerIndex = result.answers.findIndex(
                     a => a.questionText === question.questionText
                 );
@@ -293,115 +284,66 @@ io.on('connection', (socket) => {
                     questionText: question.questionText,
                     selectedOption: answer,
                     correctOption: question.correctAnswer,
-                    isCorrect
+                    isCorrect,
+                    timeTaken: qTimeTaken
                 };
 
                 if (existingAnswerIndex >= 0) {
-                    // Update existing answer
                     const oldAnswer = result.answers[existingAnswerIndex];
                     const oldPoints = oldAnswer.isCorrect ? (question.points || 10) : 0;
+                    const oldTime = oldAnswer.timeTaken || 0;
+
                     result.score = result.score - oldPoints + points;
+                    result.totalTimeTaken = result.totalTimeTaken - oldTime + qTimeTaken;
                     result.answers[existingAnswerIndex] = answerData;
                 } else {
-                    // Add new answer
                     result.answers.push(answerData);
                     result.score += points;
+                    result.totalTimeTaken += qTimeTaken;
                 }
 
-                // Ensure status is in-progress and tracking start time
                 result.status = 'in-progress';
-                if (!result.startedAt) {
-                    result.startedAt = Date.now();
-                }
+                if (!result.startedAt) result.startedAt = Date.now();
 
                 await result.save();
 
-                // Ensure submitting student is always visible in participants list
-                // (covers reconnect race conditions where join_room may have been missed)
-                const roomParts = roomParticipants.get(quizId) || [];
-                const studentUsername = result.student ? result.student.username : null;
-                if (studentUsername) {
-                    const alreadyInRoom = roomParts.findIndex(p => p.username === studentUsername);
-                    if (alreadyInRoom === -1) {
-                        roomParts.push({
-                            username: studentUsername,
-                            _id: studentId,
-                            role: 'student',
-                            socketId: socket.id,
-                            isOnline: true
-                        });
-                        roomParticipants.set(quizId, roomParts);
-                        io.to(quizId).emit('participants_update', roomParts);
-                    }
-                }
-
-                // Broadcast student progress to teacher
+                // Broadcast student progress to teacher with isCorrect
                 io.to(quizId).emit('student_progress_update', {
-                    studentId: studentId.toString(), /* Ensure string ID */
+                    studentId: studentId.toString(),
                     username: result.student ? result.student.username : 'Student',
                     questionIndex,
                     answered: true,
-                    isCorrect: isCorrect // Pass correctness to teacher
+                    isCorrect // FIX: Added isCorrect to broadcast
                 });
 
-                // Get all results for this quiz to build leaderboard
+                // Leaderboard calculation with speed tie-breaker
                 const allResults = await Result.find({ quiz: quizId }).populate('student', 'username');
                 const leaderboard = allResults
                     .map(r => ({
                         studentId: r.student._id,
                         username: r.student.username,
                         currentScore: r.score,
+                        totalTimeTaken: r.totalTimeTaken || 0,
                         answeredQuestions: r.answers.length
                     }))
-                    .sort((a, b) => b.currentScore - a.currentScore)
+                    .sort((a, b) => {
+                        // PRIMARY: Highest Score
+                        if (b.currentScore !== a.currentScore) {
+                            return b.currentScore - a.currentScore;
+                        }
+                        // SECONDARY: Lowest Time (Fastest)
+                        return a.totalTimeTaken - b.totalTimeTaken;
+                    })
                     .map((item, index) => ({ ...item, rank: index + 1 }));
 
-                // Broadcast leaderboard to all students in the room
-                // Calculate insights: Hardest (most wrong), Easiest (most correct)
-                const questionStats = {};
-                allResults.forEach(r => {
-                    r.answers.forEach(ans => {
-                        if (!questionStats[ans.questionText]) {
-                            questionStats[ans.questionText] = { correct: 0, wrong: 0 };
-                        }
-                        if (ans.isCorrect) questionStats[ans.questionText].correct++;
-                        else questionStats[ans.questionText].wrong++;
-                    });
-                });
-
-                let hardestQuestion = null;
-                let easiestQuestion = null;
-                let maxWrong = -1;
-                let maxCorrect = -1;
-
-                Object.keys(questionStats).forEach(qText => {
-                    if (questionStats[qText].wrong > maxWrong) {
-                        maxWrong = questionStats[qText].wrong;
-                        hardestQuestion = qText;
-                    }
-                    if (questionStats[qText].correct > maxCorrect) {
-                        maxCorrect = questionStats[qText].correct;
-                        easiestQuestion = qText;
-                    }
-                });
-
-                const liveInsights = {
-                    hardestQuestion,
-                    easiestQuestion,
-                    topStudent: leaderboard[0]?.username
-                };
-
-                // Persist leaderboard in roomState for teacher refresh recovery
+                // Track leaderboard in state
                 const updatedState = roomState.get(quizId) || {};
-                roomState.set(quizId, { ...updatedState, leaderboard, liveInsights });
+                roomState.set(quizId, { ...updatedState, leaderboard });
 
                 io.to(quizId).emit('question_leaderboard', {
                     questionIndex,
-                    leaderboard,
-                    liveInsights
+                    leaderboard
                 });
-
-                console.log(`Answer submitted. Score: ${result.score}. Leaderboard broadcast.`);
             }
         } catch (err) {
             console.error('Error submitting question answer:', err);
@@ -455,13 +397,9 @@ io.on('connection', (socket) => {
             const { quizId, username } = info;
             const participants = roomParticipants.get(quizId);
             if (participants) {
-                // Instead of filtering out, mark as offline so teacher dashboard can show status
-                const idx = participants.findIndex(p => p.socketId === socket.id);
-                if (idx !== -1) {
-                    participants[idx].isOnline = false;
-                    participants[idx].socketId = null; // Clear socket ID
-                }
-                io.to(quizId).emit('participants_update', participants);
+                const updatedList = participants.filter(p => p.socketId !== socket.id);
+                roomParticipants.set(quizId, updatedList);
+                io.to(quizId).emit('participants_update', updatedList);
             }
             socketToUser.delete(socket.id);
         }

@@ -19,11 +19,16 @@ const ResultSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    totalTimeTaken: {
+        type: Number,
+        default: 0
+    },
     answers: [{
         questionText: String,
         selectedOption: String,
         correctOption: String,
-        isCorrect: Boolean
+        isCorrect: Boolean,
+        timeTaken: Number
     }],
     status: {
         type: String,
