@@ -26,6 +26,7 @@ export default function AttemptQuiz() {
     const [isCorrectFeedback, setIsCorrectFeedback] = useState(false);
     const [answeredQuestions, setAnsweredQuestions] = useState(new Set()); // tracks submitted questions in live mode
     const hasInitializedTimer = useRef(false);
+    const serverSyncedTime = useRef(null); // Stores timer value synced from server on reconnect
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [missionComplete, setMissionComplete] = useState(false);
 
@@ -71,6 +72,9 @@ export default function AttemptQuiz() {
             console.log('Teacher changed question to:', questionIndex);
             const nextIdx = parseInt(questionIndex);
             setCurrentQuestion(nextIdx);
+            // Reset timer flag so next question gets a fresh timer
+            hasInitializedTimer.current = false;
+            serverSyncedTime.current = null;
 
             // Reset state for new question
             if (quiz && !quiz.duration) {
@@ -103,7 +107,11 @@ export default function AttemptQuiz() {
             }
             
             if (state.quizStatus === 'started') {
+                 // Store synced time in ref BEFORE timer init effect can run
+                 serverSyncedTime.current = state.remainingTime;
                  setTimeLeft(state.remainingTime);
+                 // Allow future per-question initializations to fire
+                 hasInitializedTimer.current = false;
             } else if (state.quizStatus === 'finished') {
                  navigate(`/leaderboard/${id}`);
             }
@@ -267,6 +275,13 @@ export default function AttemptQuiz() {
     // Timer Initialization (Split from focus logic)
     useEffect(() => {
         if (quiz && !isReviewMode && !result) {
+            // If server just gave us a synced time (from restoreState or sync_timer), use it and clear it
+            if (serverSyncedTime.current !== null) {
+                setTimeLeft(serverSyncedTime.current);
+                serverSyncedTime.current = null;
+                hasInitializedTimer.current = true;
+                return;
+            }
             // Initialize global timer ONLY ONCE
             if (quiz.duration > 0) {
                 if (!hasInitializedTimer.current) {
@@ -274,14 +289,14 @@ export default function AttemptQuiz() {
                     hasInitializedTimer.current = true;
                 }
             } else {
-                // Per question timer: reset on every question change
+                // Per question timer: reset ONCE per question change
                 if (!hasInitializedTimer.current) {
                     setTimeLeft(quiz.timerPerQuestion || 30);
                     hasInitializedTimer.current = true;
                 }
             }
         }
-    }, [quiz, isReviewMode, result, id]); // Keeping currentQuestion out to prevent mid-question timer overrides
+    }, [quiz, isReviewMode, result, currentQuestion]); // currentQuestion triggers per-question resets
 
     useEffect(() => {
         if (loading || isReviewMode || !quiz) return;
