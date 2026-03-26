@@ -80,17 +80,63 @@ export default function AttemptQuiz() {
             localStorage.setItem(`live_quiz_session_${id}`, JSON.stringify({ currentQuestion: nextIdx, answers }));
         });
 
+        socket.on('restoreState', (state) => {
+            console.log('Restoring State on Reconnect (Student):', state);
+            setCurrentQuestion(state.currentQuestionIndex);
+            
+            // Check if student has already answered this question
+            if (authUser && state.progress && state.progress[authUser._id]) {
+                 const studentProgress = state.progress[authUser._id];
+                 
+                 // Restore answered tracking for logic
+                 const answeredList = Object.keys(studentProgress).map(Number).filter(qIdx => studentProgress[qIdx].answered);
+                 setAnsweredQuestions(new Set(answeredList));
+
+                 // Restore superficial answers mapping for UI dots visually
+                 const recoveredAnswers = {};
+                 Object.keys(studentProgress).forEach(qIdx => {
+                      if (studentProgress[qIdx].answered) {
+                           recoveredAnswers[qIdx] = true;
+                      }
+                 });
+                 setAnswers(prev => ({ ...prev, ...recoveredAnswers }));
+            }
+            
+            if (state.quizStatus === 'started') {
+                 setTimeLeft(state.remainingTime);
+            } else if (state.quizStatus === 'finished') {
+                 navigate(`/leaderboard/${id}`);
+            }
+        });
+
         socket.on('connect', () => {
             setIsOnline(true);
             if (quiz?.isLive && authUser) {
-                socket.emit('join_room', {
-                    quizId: id,
-                    user: {
-                        username: authUser.username,
-                        role: 'student',
-                        _id: authUser._id
+                const sessionStr = localStorage.getItem(`live_quiz_session_student_${id}`);
+                if (sessionStr) {
+                    try {
+                        const sess = JSON.parse(sessionStr);
+                        socket.emit('reconnectUser', { quizId: sess.quizId, user: { username: sess.username, role: sess.role } });
+                    } catch (e) {
+                        socket.emit('join_room', {
+                            quizId: id,
+                            user: {
+                                username: authUser.username,
+                                role: 'student',
+                                _id: authUser._id
+                            }
+                        });
                     }
-                });
+                } else {
+                    socket.emit('join_room', {
+                        quizId: id,
+                        user: {
+                            username: authUser.username,
+                            role: 'student',
+                            _id: authUser._id
+                        }
+                    });
+                }
             }
         });
         socket.on('disconnect', () => setIsOnline(false));
@@ -100,6 +146,7 @@ export default function AttemptQuiz() {
             socket.off('timer_update');
             socket.off('sync_timer');
             socket.off('change_question');
+            socket.off('restoreState');
             socket.off('connect');
             socket.off('disconnect');
         };
@@ -121,14 +168,31 @@ export default function AttemptQuiz() {
                     } catch (e) { console.error('Session restore error:', e); }
                 }
                 // Re-join room so teacher participant count updates
-                socket.emit('join_room', {
-                    quizId: id,
-                    user: {
-                        username: authUser.username,
-                        role: 'student',
-                        _id: authUser._id
+                const sessionStr = localStorage.getItem(`live_quiz_session_student_${id}`);
+                if (sessionStr) {
+                    try {
+                        const sess = JSON.parse(sessionStr);
+                        socket.emit('reconnectUser', { quizId: sess.quizId, user: { username: sess.username, role: sess.role } });
+                    } catch (e) {
+                         socket.emit('join_room', {
+                            quizId: id,
+                            user: {
+                                username: authUser.username,
+                                role: 'student',
+                                _id: authUser._id
+                            }
+                        });
                     }
-                });
+                } else {
+                    socket.emit('join_room', {
+                        quizId: id,
+                        user: {
+                            username: authUser.username,
+                            role: 'student',
+                            _id: authUser._id
+                        }
+                    });
+                }
             }
         };
         window.addEventListener('offline', handleOffline);
@@ -211,10 +275,13 @@ export default function AttemptQuiz() {
                 }
             } else {
                 // Per question timer: reset on every question change
-                setTimeLeft(quiz.timerPerQuestion || 30);
+                if (!hasInitializedTimer.current) {
+                    setTimeLeft(quiz.timerPerQuestion || 30);
+                    hasInitializedTimer.current = true;
+                }
             }
         }
-    }, [currentQuestion, quiz, isReviewMode, result, id]); // Keeping currentQuestion for per-question mode
+    }, [quiz, isReviewMode, result, id]); // Keeping currentQuestion out to prevent mid-question timer overrides
 
     useEffect(() => {
         if (loading || isReviewMode || !quiz) return;
@@ -274,6 +341,13 @@ export default function AttemptQuiz() {
                         } catch (e) { console.error('Session restore on refresh:', e); }
                     }
                     if (authUser) {
+                        const sessionData = {
+                            quizId: id,
+                            username: authUser.username,
+                            role: 'student',
+                            _id: authUser._id
+                        };
+                        localStorage.setItem(`live_quiz_session_student_${id}`, JSON.stringify(sessionData));
                         socket.emit('join_room', {
                             quizId: id,
                             user: {

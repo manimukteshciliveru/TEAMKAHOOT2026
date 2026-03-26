@@ -31,6 +31,15 @@ export default function LiveRoomTeacher() {
                 const res = await api.post('/quiz/join', { code: joinCode });
                 const quizRes = await api.get(`/quiz/${res.data.quizId}`);
                 setQuiz(quizRes.data);
+                
+                // Persist Teacher Session
+                const sessionData = {
+                    quizId: quizRes.data._id,
+                    username: user.username,
+                    role: 'teacher'
+                };
+                localStorage.setItem(`live_quiz_session_teacher_${joinCode}`, JSON.stringify(sessionData));
+
                 socket.emit('join_room', { quizId: quizRes.data._id, user: { username: user.username, role: 'teacher' } });
             } catch (err) {
                 console.error(err);
@@ -100,16 +109,55 @@ export default function LiveRoomTeacher() {
             if (timeLeft > 0) setIsTimerRunning(true);
         });
 
+        socket.on('restoreState', (state) => {
+            console.log('Restoring State on Reconnect:', state);
+            setCurrentQuestion(state.currentQuestionIndex);
+            
+            // Re-sync leaderboards and participants
+            if (state.leaderboard && state.leaderboard.length > 0) {
+                setLeaderboard(state.leaderboard);
+            }
+            if (state.participants && state.participants.length > 0) {
+                const students = state.participants.filter(p => p.role !== 'teacher');
+                setParticipants(students);
+            }
+            if (state.progress) {
+                setStudentProgress(state.progress);
+            }
+
+            if (state.quizStatus === 'started') {
+                setQuiz(prev => prev ? { ...prev, status: 'started' } : null);
+                setTimeLeft(state.remainingTime);
+                if (state.remainingTime > 0) setIsTimerRunning(true);
+            } else if (state.quizStatus === 'finished') {
+                setIsQuizEnded(true);
+                setIsTimerRunning(false);
+            }
+        });
+
         socket.on('quiz_ended', () => {
             setIsQuizEnded(true);
             setIsTimerRunning(false);
         });
 
         socket.on('connect', () => {
+            setIsOnline(true);
             if (quiz && user) {
-                socket.emit('join_room', { quizId: quiz._id, user: { username: user.username, role: 'teacher' } });
+                const sessionStr = localStorage.getItem(`live_quiz_session_teacher_${joinCode}`);
+                if (sessionStr) {
+                    try {
+                        const sess = JSON.parse(sessionStr);
+                        socket.emit('reconnectUser', { quizId: sess.quizId, user: { username: sess.username, role: sess.role } });
+                    } catch (e) {
+                         socket.emit('join_room', { quizId: quiz._id, user: { username: user.username, role: 'teacher' } });
+                    }
+                } else {
+                    socket.emit('join_room', { quizId: quiz._id, user: { username: user.username, role: 'teacher' } });
+                }
             }
         });
+
+        socket.on('disconnect', () => setIsOnline(false));
 
         return () => {
             socket.off('participants_update');
@@ -117,6 +165,7 @@ export default function LiveRoomTeacher() {
             socket.off('progress_history');
             socket.off('question_leaderboard');
             socket.off('sync_timer');
+            socket.off('restoreState');
             socket.off('quiz_ended');
         };
     }, [joinCode, user, navigate]);
@@ -175,7 +224,17 @@ export default function LiveRoomTeacher() {
         const handleOnline = () => {
             setIsOnline(true);
             if (quiz) {
-                socket.emit('join_room', { quizId: quiz._id, user: { username: user.username, role: 'teacher' } });
+                const sessionStr = localStorage.getItem(`live_quiz_session_teacher_${joinCode}`);
+                if (sessionStr) {
+                    try {
+                        const sess = JSON.parse(sessionStr);
+                        socket.emit('reconnectUser', { quizId: sess.quizId, user: { username: sess.username, role: sess.role } });
+                    } catch (e) {
+                         socket.emit('join_room', { quizId: quiz._id, user: { username: user.username, role: 'teacher' } });
+                    }
+                } else {
+                    socket.emit('join_room', { quizId: quiz._id, user: { username: user.username, role: 'teacher' } });
+                }
             }
         };
         window.addEventListener('offline', handleOffline);
@@ -203,7 +262,7 @@ export default function LiveRoomTeacher() {
         const lbMap = new Map();
         leaderboard.forEach(l => lbMap.set(l.username, l));
 
-        participants.forEach(p => map.set(p.username, { ...p, isOnline: true, lb: lbMap.get(p.username) }));
+        participants.forEach(p => map.set(p.username, { ...p, isOnline: p.isOnline !== false, lb: lbMap.get(p.username) }));
         leaderboard.forEach(l => {
             if (!map.has(l.username)) {
                 map.set(l.username, {

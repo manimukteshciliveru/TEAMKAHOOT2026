@@ -87,6 +87,104 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('reconnectUser', ({ quizId, user }) => {
+        socket.join(quizId);
+        socketToUser.set(socket.id, { quizId, username: user.username });
+
+        if (!roomParticipants.has(quizId)) {
+            roomParticipants.set(quizId, []);
+        }
+
+        const participants = roomParticipants.get(quizId);
+        const existingIdx = participants.findIndex(p => p.username === user.username);
+
+        const userData = { ...user, socketId: socket.id, isOnline: true };
+        if (existingIdx !== -1) {
+            participants[existingIdx] = userData;
+        } else if (user.username) {
+            participants.push(userData);
+        }
+
+        console.log(`User ${user.username} (${user.role}) reconnected to room ${quizId}.`);
+        io.to(quizId).emit('participants_update', participants);
+
+        const sendRestoreState = async () => {
+            let state = roomState.get(quizId) || {};
+            
+            // If server restarted, state might lack leaderboard or progress. Rebuild it.
+             if (!state.leaderboard || !state.progress) {
+                 try {
+                     const Result = require('./models/Result');
+                     const Quiz = require('./models/Quiz');
+                     const quizInfo = await Quiz.findById(quizId);
+                     
+                     if (quizInfo) {
+                         const allResults = await Result.find({ quiz: quizId }).populate('student', 'username');
+                         
+                         // Rebuild Leaderboard
+                         const leaderboard = allResults
+                             .map(r => ({
+                                 studentId: r.student?._id || null,
+                                 username: r.student?.username || 'Unknown',
+                                 currentScore: r.score || 0,
+                                 totalTimeTaken: r.totalTimeTaken || 0,
+                                 lastAnsweredAt: r.lastAnsweredAt || r.startedAt || new Date(),
+                                 answeredQuestions: r.answers?.length || 0
+                             }))
+                             .sort((a, b) => {
+                                 if (b.currentScore !== a.currentScore) return b.currentScore - a.currentScore;
+                                 if (a.totalTimeTaken !== b.totalTimeTaken) return a.totalTimeTaken - b.totalTimeTaken;
+                                 return new Date(a.lastAnsweredAt) - new Date(b.lastAnsweredAt);
+                             })
+                             .map((item, index) => ({ ...item, rank: index + 1 }));
+
+                         // Rebuild Progress Dictionary
+                         const progress = {};
+                         allResults.forEach(r => {
+                             const studentIdStr = r.student?._id?.toString();
+                             if (studentIdStr) {
+                                  progress[studentIdStr] = {};
+                                  r.answers.forEach(ans => {
+                                      // Find which question index this was
+                                      const qIdx = quizInfo.questions.findIndex(q => q.questionText === ans.questionText);
+                                      if (qIdx !== -1) {
+                                          progress[studentIdStr][qIdx] = {
+                                              answered: true,
+                                              isCorrect: ans.isCorrect
+                                          };
+                                      }
+                                  });
+                             }
+                         });
+
+                         state = { ...state, leaderboard, progress, status: quizInfo.status };
+                         roomState.set(quizId, state);
+                     }
+                 } catch (err) {
+                     console.error('Error rebuilding state on reconnect:', err);
+                 }
+             }
+
+             let timeLeft = 0;
+             if (state.endTime) {
+                 timeLeft = Math.max(0, Math.ceil((state.endTime - Date.now()) / 1000));
+             }
+
+             const restoreStatePayload = {
+                 currentQuestionIndex: state.currentQuestion || 0,
+                 remainingTime: timeLeft,
+                 quizStatus: state.status,
+                 leaderboard: state.leaderboard || [],
+                 participants: participants,
+                 progress: state.progress || {}
+             };
+             socket.emit('restoreState', restoreStatePayload);
+             console.log(`Sent restoreState to ${user.username}`);
+        };
+        
+        sendRestoreState();
+    });
+
     socket.on('start_quiz', async (quizId) => {
         try {
             const Quiz = require('./models/Quiz');
@@ -281,7 +379,10 @@ io.on('connection', (socket) => {
         const currentProgress = state.progress || {};
 
         if (!currentProgress[studentId]) currentProgress[studentId] = {};
-        currentProgress[studentId][questionIndex] = true;
+        
+        // We will update the progress dictionary *again* down below once we know if it was correct or not.
+        // For now, mark it superficially as 'answered: true' so UI updates immediately (optimistic).
+        currentProgress[studentId][questionIndex] = { answered: true, isCorrect: false };
 
         roomState.set(quizId, { ...state, progress: currentProgress });
 
@@ -360,6 +461,12 @@ io.on('connection', (socket) => {
                     result.score += points;
                     result.totalTimeTaken += qTimeTaken;
                 }
+                
+                // Update in-memory state with the actual isCorrect value for reconnection sync
+                const updatedProgress = state.progress || {};
+                if (!updatedProgress[studentId]) updatedProgress[studentId] = {};
+                updatedProgress[studentId][questionIndex] = { answered: true, isCorrect };
+                roomState.set(quizId, { ...state, progress: updatedProgress });
 
                 result.status = 'in-progress';
                 if (!result.startedAt) result.startedAt = Date.now();
@@ -478,9 +585,13 @@ io.on('connection', (socket) => {
             const { quizId, username } = info;
             const participants = roomParticipants.get(quizId);
             if (participants) {
-                const updatedList = participants.filter(p => p.socketId !== socket.id);
-                roomParticipants.set(quizId, updatedList);
-                io.to(quizId).emit('participants_update', updatedList);
+                const existingIdx = participants.findIndex(p => p.username === username);
+                if (existingIdx !== -1) {
+                    // Update the user to offline instead of removing them
+                    participants[existingIdx].isOnline = false;
+                    participants[existingIdx].socketId = null;
+                }
+                io.to(quizId).emit('participants_update', participants);
             }
             socketToUser.delete(socket.id);
         }
