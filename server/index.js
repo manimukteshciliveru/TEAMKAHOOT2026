@@ -98,20 +98,26 @@ io.on('connection', (socket) => {
         const participants = roomParticipants.get(quizId);
         const existingIdx = participants.findIndex(p => p.username === user.username);
 
-        const userData = { ...user, socketId: socket.id, isOnline: true };
+        // ROBUSTNESS: If client forgot the _id, try to restore it from existing participant entry
+        const effectiveUser = { ...user };
+        if (!effectiveUser._id && existingIdx !== -1 && participants[existingIdx]._id) {
+            effectiveUser._id = participants[existingIdx]._id;
+        }
+
+        const userData = { ...effectiveUser, socketId: socket.id, isOnline: true };
         if (existingIdx !== -1) {
             participants[existingIdx] = userData;
         } else if (user.username) {
             participants.push(userData);
         }
 
-        console.log(`User ${user.username} (${user.role}) reconnected to room ${quizId}.`);
+        console.log(`User ${user.username} (${user.role}) reconnected to room ${quizId}. ID: ${userData._id}`);
         io.to(quizId).emit('participants_update', participants);
 
         const sendRestoreState = async () => {
             let state = roomState.get(quizId) || {};
             
-            // If server restarted, state might lack leaderboard or progress. Rebuild it.
+            // Re-fetch/Rebuild state logic ...
              if (!state.leaderboard || !state.progress) {
                  try {
                      const Result = require('./models/Result');
