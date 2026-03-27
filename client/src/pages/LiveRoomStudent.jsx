@@ -181,7 +181,8 @@ export default function LiveRoomStudent() {
                 const sessionData = {
                     quizId: quizRes.data._id,
                     username: user.username,
-                    role: 'student'
+                    role: 'student',
+                    _id: studentId || user._id
                 };
                 localStorage.setItem(`live_quiz_session_student_${quizRes.data._id}`, JSON.stringify(sessionData));
 
@@ -210,7 +211,7 @@ export default function LiveRoomStudent() {
                 if (sessionStr) {
                     try {
                         const sess = JSON.parse(sessionStr);
-                        socket.emit('reconnectUser', { quizId: sess.quizId, user: { username: sess.username, role: sess.role } });
+                        socket.emit('reconnectUser', { quizId: sess.quizId, user: { username: sess.username, role: sess.role, _id: sess._id } });
                     } catch (e) {
                         socket.emit('join_room', { quizId: quiz._id, user: { username: user.username, role: 'student', _id: user._id } });
                     }
