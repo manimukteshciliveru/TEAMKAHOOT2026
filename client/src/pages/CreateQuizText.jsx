@@ -337,18 +337,52 @@ import DashboardLayout from '../components/DashboardLayout';
 import { Type, Loader2, Plus, Minus, CheckCircle, Clock, Upload, FileText, AlertCircle, Eye, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 
 // ─── AIKEN PARSER ────────────────────────────────────────────────────────────
+// Robust state-machine parser: works whether questions are separated by
+// blank lines OR just a single newline (both are common in real AIKEN files).
+// Strategy: ANSWER line is the hard end-of-question marker. After seeing it,
+// the very next non-blank, non-option, non-answer line begins a new question.
 function parseAiken(text) {
     const errors = [];
     const questions = [];
-    const blocks = text.trim().split(/\n{2,}/);
 
-    for (let i = 0; i < blocks.length; i++) {
-        const block = blocks[i].trim();
-        if (!block) continue;
+    const isOption = line => /^[A-Z]\.\s+.+$/.test(line);
+    const isAnswer = line => /^ANSWER\s*:\s*[A-Z]$/i.test(line);
 
-        const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+    const rawLines = text.split('\n').map(l => l.trim());
+
+    // Build chunks: each chunk is the lines for one question.
+    // We flush a new chunk whenever we see an ANSWER line and then hit the
+    // start of what looks like the next question (non-blank, non-option, non-answer).
+    const chunks = [];
+    let current = [];
+    let sawAnswer = false;
+
+    for (const line of rawLines) {
+        if (line === '') continue; // skip blank lines entirely
+
+        if (sawAnswer && !isOption(line) && !isAnswer(line)) {
+            // Previous question ended; this line starts the next one
+            if (current.length > 0) {
+                chunks.push(current);
+                current = [];
+            }
+            sawAnswer = false;
+        }
+
+        current.push(line);
+
+        if (isAnswer(line)) {
+            sawAnswer = true;
+        }
+    }
+    if (current.length > 0) chunks.push(current);
+
+    for (let i = 0; i < chunks.length; i++) {
+        const lines = chunks[i];
+        const qNum = i + 1;
+
         if (lines.length < 3) {
-            errors.push(`Block ${i + 1}: Too few lines to be a valid question.`);
+            errors.push(`Question ${qNum}: Too few lines to be valid.`);
             continue;
         }
 
@@ -365,21 +399,21 @@ function parseAiken(text) {
             } else if (ansMatch) {
                 correctAnswer = ansMatch[1].toUpperCase();
             } else {
-                errors.push(`Block ${i + 1}, line ${j + 1}: Unrecognized format → "${lines[j]}"`);
+                errors.push(`Question ${qNum}: Unrecognized line → "${lines[j]}"`);
             }
         }
 
         if (options.length < 2) {
-            errors.push(`Block ${i + 1}: Needs at least 2 options.`);
+            errors.push(`Question ${qNum}: Needs at least 2 options.`);
             continue;
         }
         if (!correctAnswer) {
-            errors.push(`Block ${i + 1}: Missing ANSWER line.`);
+            errors.push(`Question ${qNum}: Missing ANSWER line.`);
             continue;
         }
         const correctOpt = options.find(o => o.letter === correctAnswer);
         if (!correctOpt) {
-            errors.push(`Block ${i + 1}: ANSWER "${correctAnswer}" does not match any option letter.`);
+            errors.push(`Question ${qNum}: ANSWER "${correctAnswer}" does not match any option letter.`);
             continue;
         }
 
