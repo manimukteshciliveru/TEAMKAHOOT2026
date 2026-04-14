@@ -12,6 +12,7 @@ const QuizSchema = new mongoose.Schema({
         questionText: { type: String, required: true },
         options: [{ type: String }],
         correctAnswer: { type: String, required: true },
+        explanation: { type: String },
         points: { type: Number, default: 10 },
         type: { type: String, enum: ['multiple-choice', 'true-false', 'input'], default: 'multiple-choice' }
     }],

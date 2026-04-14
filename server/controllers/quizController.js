@@ -18,93 +18,47 @@ const generateMockQuestions = (count = 5) => {
     return questions;
 };
 
-// GEMINI AI Generation - Direct REST API call (more reliable than SDK)
+// LOCAL AI Generation - Calling the FastAPI service
+const fs = require('fs');
 const generateQuestions = async (type, content, count = 5, difficulty = 'Medium') => {
-    const apiKey = process.env.GEMINI_API_KEY;
-    console.log('Key Status:', apiKey ? 'Present (' + apiKey.substring(0, 10) + '...)' : 'Missing');
+    try {
+        console.log(`🤖 Requesting Local AI: ${type} | Count: ${count} | Difficulty: ${difficulty}`);
+        
+        const aiUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+        let payloadContent = content;
 
-    if (!apiKey || apiKey === 'AIzaSyPlaceholder') {
-        console.log('⚠️  Using Mock Quiz Generation (No Gemini API Key)');
-        return generateMockQuestions(count);
-    }
-
-    if (!content || (type !== 'topic' && content.trim().length < 20)) {
-        console.error('❌ Content too short or empty');
-        return generateMockQuestions(count);
-    }
-
-    const prompt = `You are an expert educational quiz generator. Create exactly ${count} multiple choice questions. Difficulty: ${difficulty}.
-
-TOPIC/CONTENT: "${content.substring(0, 20000)}"
-
-RULES:
-- For a TOPIC: generate general knowledge questions about it.
-- For PDF CONTENT: questions must be answerable from the provided text only.
-- Return ONLY valid JSON, no markdown, no explanation.
-- CRITICAL: "correctAnswer" MUST be the EXACT STRING from the "options" array. DO NOT use labels like "A", "B", "1", "2".
-
-JSON FORMAT:
-{"questions":[{"questionText":"What is 2+2?","options":["3","4","5","6"],"correctAnswer":"4","points":10,"type":"multiple-choice"}]}`;
-
-    const makeRequest = (model) => new Promise((resolve, reject) => {
-        const https = require('https');
-        const body = JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] });
-        const options = {
-            hostname: 'generativelanguage.googleapis.com',
-            path: `/v1beta/models/${model}:generateContent?key=${apiKey}`,
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
-        };
-        const req = https.request(options, (res) => {
-            let data = '';
-            res.on('data', chunk => data += chunk);
-            res.on('end', () => resolve({ status: res.statusCode, body: data }));
-        });
-        req.on('error', reject);
-        req.write(body);
-        req.end();
-    });
-
-    const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest'];
-
-    for (const model of models) {
-        try {
-            console.log(`🤖 Trying ${model}...`);
-            let { status, body } = await makeRequest(model);
-
-            // Retry once on 429
-            if (status === 429) {
-                console.log('⏳ Rate limited, waiting 3s...');
-                await new Promise(r => setTimeout(r, 3000));
-                ({ status, body } = await makeRequest(model));
-            }
-
-            if (status !== 200) {
-                console.log(`❌ ${model} failed with status ${status}:`, body.substring(0, 150));
-                continue;
-            }
-
-            const parsed = JSON.parse(body);
-            const rawText = parsed.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-            if (!rawText) { console.log(`❌ ${model} returned empty text`); continue; }
-
-            const cleanJSON = rawText.replace(/^```json\n?/, '').replace(/\n?```$/, '').replace(/^```\n?/, '').trim();
-            const data = JSON.parse(cleanJSON);
-            const questions = Array.isArray(data.questions) ? data.questions : data;
-            console.log(`✅ ${model} generated ${questions.length} questions`);
-            return questions;
-
-        } catch (err) {
-            console.error(`❌ ${model} error:`, err.message?.substring(0, 100));
+        // Base64 logic for hybrid cloud deployment
+        // If we have a file path, read it as base64 to send across the network reliably.
+        if (type !== 'topic' && fs.existsSync(content)) {
+            console.log(`📦 Converting file to base64 for reliable transmission to AI service...`);
+            payloadContent = "base64:" + fs.readFileSync(content, { encoding: 'base64' });
+            
+            // Clean up the temporary upload from Multer after reading it
+            try { fs.unlinkSync(content); } catch(e) { console.error('Failed to cleanup file:', e); }
         }
-    }
 
-    console.log('⚠️  All models failed — using mock questions');
-    return generateMockQuestions(count);
+        const response = await fetch(`${aiUrl}/generate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type, content: payloadContent, count, difficulty })
+        });
+
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.detail || 'AI Service Error');
+        }
+
+        const data = await response.json();
+        console.log(`✅ AI successfully generated ${data.questions.length} questions`);
+        return data.questions;
+
+    } catch (err) {
+        console.error('❌ AI error:', err.message);
+        return generateMockQuestions(count);
+    }
 };
 
 const generateJoinCode = () => {
-
     return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
@@ -115,39 +69,23 @@ exports.createQuiz = async (req, res) => {
 
         if (manualQuestions && manualQuestions.length > 0) {
             finalQuestions = Array.isArray(manualQuestions) ? manualQuestions : JSON.parse(manualQuestions);
-        } else if (req.file && type === 'pdf') {
-            try {
-                console.log('📄 Parsing PDF:', req.file.originalname, 'Size:', req.file.size, 'bytes');
+        } else if (req.file) {
+            // New logic: Use the local file path for our Python AI service
+            const absolutePath = require('path').resolve(req.file.path);
+            console.log(`📄 Processing file: ${req.file.originalname} via ${absolutePath}`);
+            
+            // Detect type if it was generically set
+            let fileType = type;
+            const ext = require('path').extname(req.file.originalname).toLowerCase();
+            if (['.jpg', '.jpeg', '.png'].includes(ext)) fileType = 'image';
+            else if (ext === '.docx') fileType = 'docx';
+            else if (ext === '.pptx') fileType = 'pptx';
+            else if (ext === '.pdf') fileType = 'pdf';
 
-                // Use pdf-parse directly
-                const data = await pdfParse(req.file.buffer);
-
-                console.log('📝 PDF extracted text length:', data.text?.length || 0, 'characters');
-                console.log('📄 PDF text preview:', data.text?.substring(0, 300).replace(/\s+/g, ' '));
-
-                // Validate extracted text
-                if (!data.text || data.text.trim().length < 100) {
-                    throw new Error('PDF text extraction failed or content too short (minimum 100 characters required)');
-                }
-
-                // Clean up the text (remove excessive whitespace)
-                const cleanedText = data.text
-                    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-                    .replace(/\n+/g, '\n') // Replace multiple newlines with single newline
-                    .trim();
-
-                console.log('✨ Cleaned text length:', cleanedText.length, 'characters');
-
-                finalQuestions = await generateQuestions('pdf', cleanedText, questionCount, difficulty);
-            } catch (pdfErr) {
-                console.error('❌ PDF Parsing Error:', pdfErr.message);
-                // If PDF parsing fails, try to generate mock questions instead
-                console.log('⚠️  Falling back to mock questions due to PDF error');
-                finalQuestions = generateMockQuestions(questionCount || 5);
-            }
+            finalQuestions = await generateQuestions(fileType, absolutePath, questionCount, difficulty);
         } else if (content || topic) {
             console.log('📚 Generating from topic/content:', (content || topic).substring(0, 100));
-            finalQuestions = await generateQuestions(type, content || topic, questionCount, difficulty);
+            finalQuestions = await generateQuestions('topic', content || topic, questionCount, difficulty);
         }
 
         if (isLive === 'true' || isLive === true) {

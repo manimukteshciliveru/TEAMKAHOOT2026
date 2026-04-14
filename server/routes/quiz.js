@@ -3,7 +3,31 @@ const router = express.Router();
 const auth = require('../middleware/authMiddleware');
 const quizController = require('../controllers/quizController');
 const multer = require('multer');
-const upload = multer({ storage: multer.memoryStorage() });
+const path = require('path');
+
+// Configure disk storage for the AI service to pick up files
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/');
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ 
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['.pdf', '.docx', '.pptx', '.jpg', '.jpeg', '.png'];
+        const ext = path.extname(file.originalname).toLowerCase();
+        if (allowedTypes.includes(ext)) {
+            cb(null, true);
+        } else {
+            cb(null, true); // Allow all for now, we'll handle errors in controller
+        }
+    }
+});
 
 
 // @route   POST api/quiz/create

@@ -22,8 +22,8 @@ export default function CreateQuizPDF() {
         setLoading(true);
         try {
             const formData = new FormData();
-            formData.append('pdf', file);
-            formData.append('type', 'pdf');
+            formData.append('file', file);
+            formData.append('type', 'file');
             formData.append('questionCount', questionCount.toString());
             formData.append('difficulty', difficulty);
 
@@ -54,9 +54,9 @@ export default function CreateQuizPDF() {
                 <div className="mb-12 flex items-center justify-between">
                     <div>
                         <h1 className="text-4xl font-black text-white tracking-tight italic uppercase">
-                            AI <span className="text-[#ff6b00]">PDF Parser</span>
+                            AI <span className="text-[#ff6b00]">Document Parser</span>
                         </h1>
-                        <p className="text-slate-400 mt-2 font-bold uppercase tracking-wider text-sm italic">Analyze documents to generate 5 questions</p>
+                        <p className="text-slate-400 mt-2 font-bold uppercase tracking-wider text-sm italic">Analyze Slides, Word docs, or Photos to generate questions</p>
                     </div>
                 </div>
 
@@ -68,7 +68,7 @@ export default function CreateQuizPDF() {
                                 <div className="relative border-4 border-dashed border-white/10 rounded-[2.5rem] hover:border-[#ff6b00]/50 transition-all bg-white/5 group/upload">
                                     <input
                                         type="file"
-                                        accept=".pdf"
+                                        accept=".pdf,.docx,.pptx,.jpg,.jpeg,.png"
                                         onChange={handleFileChange}
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
                                         required
@@ -88,8 +88,8 @@ export default function CreateQuizPDF() {
                                                     <Upload size={48} />
                                                 </div>
                                                 <div className="text-center">
-                                                    <p className="text-white font-black text-2xl italic tracking-tighter">DROP PDF HERE</p>
-                                                    <p className="text-slate-500 font-bold uppercase tracking-widest text-xs mt-2">Maximum file size: 10MB</p>
+                                                    <p className="text-white font-black text-2xl italic tracking-tighter">DROP MATERIAL HERE</p>
+                                                    <p className="text-slate-500 font-bold uppercase tracking-widest text-xs mt-2">PDF, DOCX, PPTX OR IMAGES (MAX 10MB)</p>
                                                 </div>
                                             </>
                                         )}
@@ -144,7 +144,7 @@ export default function CreateQuizPDF() {
                             className="group flex items-center gap-6 bg-[#ff6b00] text-white px-20 py-8 rounded-[2.5rem] hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-2xl shadow-[#ff6b00]/20 font-black text-3xl italic uppercase tracking-tighter active:scale-95 border-b-8 border-[#cc5500]"
                         >
                             {loading ? <Loader2 className="animate-spin" size={32} /> : <CheckCircle size={32} />}
-                            {loading ? 'PARSING PDF...' : 'ANALYZE DOCUMENT'}
+                            {loading ? 'PARSING MATERIAL...' : 'ANALYZE DOCUMENT'}
                         </button>
                     </div>
                 </form>
