@@ -1,59 +1,98 @@
-const Quiz = require('../models/Quiz');
-const Result = require('../models/Result');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
-const pdfParse = require('pdf-parse');
-
-// Mock AI Generation for testing without API Key
-const generateMockQuestions = (count = 5) => {
-    const questions = [];
-    for (let i = 1; i <= count; i++) {
-        questions.push({
-            questionText: `Sample Question ${i}: Is this a real AI generated question?`,
-            options: ['Yes', 'No', 'Maybe', 'I am a mock'],
-            correctAnswer: 'I am a mock',
-            points: 10,
-            type: 'multiple-choice'
-        });
+// Helper to extract text in the cloud (Node.js)
+const extractCloudText = async (type, filePath) => {
+    try {
+        if (type === 'pdf') {
+            const dataBuffer = fs.readFileSync(filePath);
+            const data = await pdfParse(dataBuffer);
+            return data.text;
+        } else if (type === 'docx') {
+            const result = await mammoth.extractRawText({ path: filePath });
+            return result.value;
+        }
+        return null;
+    } catch (err) {
+        console.error('Extraction error:', err);
+        return null;
     }
-    return questions;
 };
 
-// LOCAL AI Generation - Calling the FastAPI service
-const fs = require('fs');
+// CLOUD AI Generation - Using Groq Llama-3 70B
 const generateQuestions = async (type, content, count = 5, difficulty = 'Medium') => {
     try {
-        console.log(`🤖 Requesting Local AI: ${type} | Count: ${count} | Difficulty: ${difficulty}`);
+        console.log(`☁️ Requesting Cloud AI (Groq): ${type} | Count: ${count}`);
         
-        const aiUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
-        let payloadContent = content;
+        let contextText = content;
 
-        // Base64 logic for hybrid cloud deployment
-        // If we have a file path, read it as base64 to send across the network reliably.
-        if (type !== 'topic' && fs.existsSync(content)) {
-            console.log(`📦 Converting file to base64 for reliable transmission to AI service...`);
-            payloadContent = "base64:" + fs.readFileSync(content, { encoding: 'base64' });
-            
-            // Clean up the temporary upload from Multer after reading it
-            try { fs.unlinkSync(content); } catch(e) { console.error('Failed to cleanup file:', e); }
+        // If it's a file and we can extract it in the cloud, do it!
+        if (type === 'pdf' || type === 'docx') {
+            if (fs.existsSync(content)) {
+                console.log('📄 Extracting text in the cloud...');
+                const extracted = await extractCloudText(type, content);
+                if (extracted) contextText = extracted;
+                // Clean up
+                try { fs.unlinkSync(content); } catch(e) {}
+            }
         }
 
-        const response = await fetch(`${aiUrl}/generate`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ type, content: payloadContent, count, difficulty })
+        // Logic for Handwriting/Images - Fallback to Local Bridge
+        if (type === 'image' || type === 'pptx') {
+            console.log('🔄 Image/PPT detected - Routing to Local Bridge...');
+            const aiUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
+            let payloadContent = content;
+            if (fs.existsSync(content)) {
+                payloadContent = "base64:" + fs.readFileSync(content, { encoding: 'base64' });
+                try { fs.unlinkSync(content); } catch(e) {}
+            }
+            const response = await fetch(`${aiUrl}/generate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type, content: payloadContent, count, difficulty })
+            });
+            const data = await response.json();
+            return data.questions;
+        }
+
+        // --- Prompt ---
+        const prompt = `
+            You are a Senior Computer Science Engineering Professor. 
+            Generate exactly ${count} multiple-choice questions for the following content.
+            Difficulty: ${difficulty}
+            
+            CONTENT: ${contextText.substring(0, 30000)}
+
+            IMPORTANT RULES:
+            - NO MATH or numerical calculations.
+            - Focus on structural engineering logic and reasoning.
+            - Format MUST be a valid JSON object.
+            
+            JSON FORMAT:
+            {
+              "questions": [
+                {
+                  "questionText": "Question here?",
+                  "options": ["A", "B", "C", "D"],
+                  "correctAnswer": "Exact string of correct option",
+                  "explanation": "Why this is correct",
+                  "points": 10,
+                  "type": "multiple-choice"
+                }
+              ]
+            }
+        `;
+
+        const completion = await groq.chat.completions.create({
+            messages: [{ role: 'user', content: prompt }],
+            model: 'llama-3.3-70b-versatile',
+            temperature: 0.5,
+            response_format: { type: "json_object" }
         });
 
-        if (!response.ok) {
-            const err = await response.json();
-            throw new Error(err.detail || 'AI Service Error');
-        }
-
-        const data = await response.json();
-        console.log(`✅ AI successfully generated ${data.questions.length} questions`);
+        const data = JSON.parse(completion.choices[0].message.content);
+        console.log(`✅ Cloud AI successfully generated ${data.questions.length} questions`);
         return data.questions;
 
     } catch (err) {
-        console.error('❌ AI error:', err.message);
+        console.error('❌ Cloud AI error:', err.message);
         return generateMockQuestions(count);
     }
 };
@@ -70,13 +109,9 @@ exports.createQuiz = async (req, res) => {
         if (manualQuestions && manualQuestions.length > 0) {
             finalQuestions = Array.isArray(manualQuestions) ? manualQuestions : JSON.parse(manualQuestions);
         } else if (req.file) {
-            // New logic: Use the local file path for our Python AI service
-            const absolutePath = require('path').resolve(req.file.path);
-            console.log(`📄 Processing file: ${req.file.originalname} via ${absolutePath}`);
-            
-            // Detect type if it was generically set
+            const absolutePath = path.resolve(req.file.path);
             let fileType = type;
-            const ext = require('path').extname(req.file.originalname).toLowerCase();
+            const ext = path.extname(req.file.originalname).toLowerCase();
             if (['.jpg', '.jpeg', '.png'].includes(ext)) fileType = 'image';
             else if (ext === '.docx') fileType = 'docx';
             else if (ext === '.pptx') fileType = 'pptx';
@@ -84,7 +119,6 @@ exports.createQuiz = async (req, res) => {
 
             finalQuestions = await generateQuestions(fileType, absolutePath, questionCount, difficulty);
         } else if (content || topic) {
-            console.log('📚 Generating from topic/content:', (content || topic).substring(0, 100));
             finalQuestions = await generateQuestions('topic', content || topic, questionCount, difficulty);
         }
 

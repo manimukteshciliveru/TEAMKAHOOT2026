@@ -20,7 +20,7 @@ from PyPDF2 import PdfReader
 # -----------------------------
 # 1. MODEL CONFIGURATION
 # -----------------------------
-MODEL_NAME = "meta-llama/Meta-Llama-3-8B-Instruct"
+MODEL_NAME = "meta-llama/Llama-3.2-3B-Instruct"
 
 print(f"Loading model {MODEL_NAME}...")
 
