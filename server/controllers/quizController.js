@@ -1,3 +1,31 @@
+const Quiz = require('../models/Quiz');
+const Result = require('../models/Result');
+const path = require('path');
+const fs = require('fs');
+const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
+const Groq = require('groq-sdk');
+
+// Initialize Groq with the environment variable
+const groq = new Groq({
+    apiKey: process.env.GROQ_API_KEY
+});
+
+// Mock AI Generation for fallback
+const generateMockQuestions = (count = 5) => {
+    const questions = [];
+    for (let i = 1; i <= count; i++) {
+        questions.push({
+            questionText: `Sample Question ${i}: AI generation is temporarily unavailable.`,
+            options: ['Option A', 'Option B', 'Option C', 'Option D'],
+            correctAnswer: 'Option A',
+            points: 10,
+            type: 'multiple-choice'
+        });
+    }
+    return questions;
+};
+
 // Helper to extract text in the cloud (Node.js)
 const extractCloudText = async (type, filePath) => {
     try {
