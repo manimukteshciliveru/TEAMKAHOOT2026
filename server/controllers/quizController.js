@@ -148,7 +148,7 @@ exports.createQuiz = async (req, res) => {
         }
 
         const newQuiz = new Quiz({
-            title: title || `${topic || 'Untitled'} ${type} Quiz`,
+            title: title || `${topic || content || 'Untitled'} Quiz`,
             description: `Level: ${difficulty || 'Medium'}`,
             questions: finalQuestions,
             createdBy: req.user.id,
@@ -156,21 +156,26 @@ exports.createQuiz = async (req, res) => {
             joinCode,
             difficulty: difficulty || 'Medium',
             timerPerQuestion: timerPerQuestion || 30,
-            duration: duration || 0, // 0 means no global limit
-            topic: topic || '',
+            duration: duration || 0,
+            topic: topic || content || '',
             isLive: isLive === 'true' || isLive === true,
             isAssessment: isAssessment === 'true' || isAssessment === true,
-            status: (isLive === 'true' || isLive === true) ? 'waiting' : 'started'
+            status: isLive === 'true' || isLive === true ? 'waiting' : 'finished'
         });
 
-        const quiz = await newQuiz.save();
-        res.json(quiz);
+        await newQuiz.save();
+        res.status(201).json(newQuiz);
 
     } catch (err) {
-        console.error(err.message);
-        res.status(500).json({ msg: 'Server Error: ' + err.message });
+        console.error('❌ Final CreateQuiz Error:', err.message);
+        res.status(500).json({ 
+            message: 'Failed to create quiz', 
+            error: err.message,
+            stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        });
     }
 };
+
 
 exports.joinByCode = async (req, res) => {
     try {
