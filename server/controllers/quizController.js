@@ -647,32 +647,35 @@ exports.updateQuiz = async (req, res) => {
 
 exports.generateQuizQuestions = async (req, res) => {
     try {
-        let { type, content, questionCount, difficulty, topic } = req.body;
+        let { type, questionCount, difficulty, topic } = req.body;
         let finalQuestions = [];
-        let extractedTitle = topic || '';
+        let extractedTitle = topic || 'AI Generated Quiz';
+        let sourceType = type || 'topic';
 
-        if (req.file && type === 'pdf') {
-            try {
-                const data = await pdfParse(req.file.buffer);
-                const cleanedText = data.text.replace(/\s+/g, ' ').trim();
-                finalQuestions = await generateQuestions('pdf', cleanedText, questionCount, difficulty);
-                extractedTitle = req.file.originalname.replace('.pdf', '');
-            } catch (pdfErr) {
-                console.error('❌ PDF Parsing Error:', pdfErr.message);
-                finalQuestions = generateMockQuestions(questionCount || 5);
-            }
-        } else if (content || topic) {
-            finalQuestions = await generateQuestions(type, content || topic, questionCount, difficulty);
+        if (req.file) {
+            console.log(`📄 Processing file for preview: ${req.file.originalname}`);
+            const absolutePath = path.resolve(req.file.path);
+            
+            // Determine file type from extension
+            const ext = path.extname(req.file.originalname).toLowerCase();
+            if (['.jpg', '.jpeg', '.png'].includes(ext)) sourceType = 'image';
+            else if (ext === '.docx') sourceType = 'docx';
+            else if (ext === '.pdf') sourceType = 'pdf';
+
+            finalQuestions = await generateQuestions(sourceType, absolutePath, questionCount, difficulty);
+            extractedTitle = req.file.originalname.replace(/\.[^/.]+$/, "");
+        } else if (topic) {
+            finalQuestions = await generateQuestions('topic', topic, questionCount, difficulty);
         }
 
         res.json({
             questions: finalQuestions,
             title: extractedTitle,
-            duration: 10 // Default duration for review
+            duration: 10
         });
 
     } catch (err) {
-        console.error(err.message);
+        console.error('❌ Generation Controller Error:', err.message);
         res.status(500).json({ msg: 'Generation Error: ' + err.message });
     }
 };
