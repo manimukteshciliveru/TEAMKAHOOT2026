@@ -3,6 +3,7 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const path = require('path'); // MISSING IMPORT FIXED
 const connectDB = require('./config/db');
 
 const app = express();
