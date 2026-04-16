@@ -54,14 +54,16 @@ const generateQuestions = async (type, content, count = 5, difficulty = 'Medium'
         let contextText = content || "No content provided";
 
         // If it's a file and we can extract it in the cloud, do it!
-        if ((type === 'pdf' || type === 'docx') && fs.existsSync(content)) {
+        const cloudSupportedTypes = ['pdf', 'docx', 'pptx', 'image', 'txt'];
+        if (cloudSupportedTypes.includes(type) && fs.existsSync(content)) {
             console.log(`📄 Extracting text from ${type} in the cloud...`);
             const extracted = await extractCloudText(type, content);
             if (extracted && extracted.trim().length > 0) {
                 contextText = extracted;
                 console.log(`✅ Extracted ${contextText.length} characters.`);
             } else {
-                console.warn('⚠️ Extraction returned empty text, falling back to original content');
+                console.warn('⚠️ Extraction failed or empty - suppressing path leak');
+                contextText = "Academic Content Parsing Failed. Please use general knowledge to generate relevant Computer Science questions.";
             }
             // Cleanup file immediately after extraction attempt
             try { fs.unlinkSync(content); } catch(e) {}
