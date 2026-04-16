@@ -11,6 +11,14 @@ const server = http.createServer(app);
 // Connect Database
 connectDB();
 
+// Ensure uploads directory exists
+const fs = require('fs');
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+    console.log('📁 Created uploads directory');
+}
+
 // Middleware
 app.use(cors({
     origin: ['https://kmit-khaoot.vercel.app', 'http://localhost:5173'],
