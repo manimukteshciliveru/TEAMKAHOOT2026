@@ -49,17 +49,20 @@ const generateQuestions = async (type, content, count = 5, difficulty = 'Medium'
     try {
         console.log(`☁️ Requesting Cloud AI (Groq): ${type} | Count: ${count}`);
         
-        let contextText = content;
+        let contextText = content || "No content provided";
 
         // If it's a file and we can extract it in the cloud, do it!
-        if (type === 'pdf' || type === 'docx') {
-            if (fs.existsSync(content)) {
-                console.log('📄 Extracting text in the cloud...');
-                const extracted = await extractCloudText(type, content);
-                if (extracted) contextText = extracted;
-                // Clean up
-                try { fs.unlinkSync(content); } catch(e) {}
+        if ((type === 'pdf' || type === 'docx') && fs.existsSync(content)) {
+            console.log(`📄 Extracting text from ${type} in the cloud...`);
+            const extracted = await extractCloudText(type, content);
+            if (extracted && extracted.trim().length > 0) {
+                contextText = extracted;
+                console.log(`✅ Extracted ${contextText.length} characters.`);
+            } else {
+                console.warn('⚠️ Extraction returned empty text, falling back to original content');
             }
+            // Cleanup file immediately after extraction attempt
+            try { fs.unlinkSync(content); } catch(e) {}
         }
 
         // Logic for Handwriting/Images - Fallback to Local Bridge
@@ -90,7 +93,7 @@ const generateQuestions = async (type, content, count = 5, difficulty = 'Medium'
 
             IMPORTANT RULES:
             - NO MATH or numerical calculations.
-            - Focus on structural engineering logic and reasoning.
+            - Focus on logical reasoning and conceptual understanding.
             - Format MUST be a valid JSON object.
             
             JSON FORMAT:
@@ -115,9 +118,17 @@ const generateQuestions = async (type, content, count = 5, difficulty = 'Medium'
             response_format: { type: "json_object" }
         });
 
-        const data = JSON.parse(completion.choices[0].message.content);
-        console.log(`✅ Cloud AI successfully generated ${data.questions.length} questions`);
-        return data.questions;
+        const rawContent = completion.choices[0].message.content;
+        console.log('🤖 AI Response received. Parsing...');
+        
+        try {
+            const data = JSON.parse(rawContent);
+            console.log(`✅ Cloud AI successfully generated ${data.questions?.length || 0} questions`);
+            return data.questions || generateMockQuestions(count);
+        } catch (parseErr) {
+            console.error('❌ JSON Parse Error. Raw content:', rawContent);
+            return generateMockQuestions(count);
+        }
 
     } catch (err) {
         console.error('❌ Cloud AI error:', err.message);
