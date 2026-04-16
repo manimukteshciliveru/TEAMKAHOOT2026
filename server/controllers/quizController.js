@@ -5,6 +5,8 @@ const fs = require('fs');
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const Groq = require('groq-sdk');
+const pptxParser = require('pptx-parser');
+const Tesseract = require('tesseract.js');
 
 // Initialize Groq with the environment variable
 const groq = new Groq({
@@ -122,9 +124,25 @@ const generateQuestions = async (type, content, count = 5, difficulty = 'Medium'
         console.log('🤖 AI Response received. Parsing...');
         
         try {
-            const data = JSON.parse(rawContent);
-            console.log(`✅ Cloud AI successfully generated ${data.questions?.length || 0} questions`);
-            return data.questions || generateMockQuestions(count);
+            // Clean the response: sometimes AI adds markdown code blocks
+            const cleanJson = rawContent.replace(/```json/g, '').replace(/```/g, '').trim();
+            const data = JSON.parse(cleanJson);
+            
+            // Critical Quality Filter: Remove any "System" or "Metadata" questions
+            const filteredQuestions = (data.questions || []).filter(q => {
+                const text = q.questionText.toLowerCase();
+                const badKeywords = ['file format', 'directory', 'opt/render', 'powerpoint', 'microsoft', 'location', 'path', 'extension'];
+                return !badKeywords.some(word => text.includes(word));
+            });
+
+            console.log(`✅ Cloud AI generated ${filteredQuestions.length} meaningful questions`);
+            
+            if (filteredQuestions.length === 0) {
+                console.warn('⚠️ All questions were filtered out as meta-junk. Retrying with fallback...');
+                return generateMockQuestions(count);
+            }
+            
+            return filteredQuestions;
         } catch (parseErr) {
             console.error('❌ JSON Parse Error. Raw content:', rawContent);
             return generateMockQuestions(count);
@@ -133,6 +151,38 @@ const generateQuestions = async (type, content, count = 5, difficulty = 'Medium'
     } catch (err) {
         console.error('❌ Cloud AI error:', err.message);
         return generateMockQuestions(count);
+    }
+};
+
+// HELPER: Extract text from any common document format in the cloud
+const extractCloudText = async (type, filePath) => {
+    try {
+        if (!fs.existsSync(filePath)) return null;
+
+        if (type === 'pdf') {
+            const dataBuffer = fs.readFileSync(filePath);
+            const data = await pdfParse(dataBuffer);
+            return data.text;
+        } else if (type === 'docx') {
+            const result = await mammoth.extractRawText({ path: filePath });
+            return result.value;
+        } else if (type === 'pptx') {
+            console.log('📉 Parsing PPTX slides...');
+            const result = await pptxParser.parse(filePath);
+            // Combine all slide text into one string
+            return result.map(slide => slide.text).join('\n\n');
+        } else if (type === 'txt') {
+            return fs.readFileSync(filePath, 'utf-8');
+        } else if (type === 'image') {
+            console.log('👁️ Running Cloud OCR (Tesseract)...');
+            const result = await Tesseract.recognize(filePath, 'eng');
+            return result.data.text;
+        }
+        
+        return null; // Return null effectively hides the "Path" from the AI
+    } catch (err) {
+        console.error(`❌ Extraction error (${type}):`, err.message);
+        return null;
     }
 };
 
