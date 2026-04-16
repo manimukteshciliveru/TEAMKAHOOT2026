@@ -167,10 +167,21 @@ const extractCloudText = async (type, filePath) => {
             const result = await mammoth.extractRawText({ path: filePath });
             return result.value;
         } else if (type === 'pptx') {
-            console.log('📉 Parsing PPTX slides...');
+            console.log('📉 Deep Parsing PPTX slides...');
             const result = await pptxParser.parse(filePath);
-            // Combine all slide text into one string
-            return result.map(slide => slide.text).join('\n\n');
+            
+            // Extract every bit of text from every possible shape on every slide
+            const slideTexts = result.map(slide => {
+                // If the library returns an object with text, or an array of shapes
+                if (typeof slide === 'string') return slide;
+                if (slide.text) return slide.text;
+                if (Array.isArray(slide.content)) return slide.content.join(' ');
+                return '';
+            });
+
+            const finalText = slideTexts.join('\n\n').trim();
+            console.log(`✅ Extracted PPTX Text: ${finalText.length} characters.`);
+            return finalText.length > 0 ? finalText : null;
         } else if (type === 'txt') {
             return fs.readFileSync(filePath, 'utf-8');
         } else if (type === 'image') {
