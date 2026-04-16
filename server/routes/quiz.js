@@ -24,20 +24,18 @@ const upload = multer({
         if (allowedTypes.includes(ext)) {
             cb(null, true);
         } else {
-            cb(null, true); // Allow all for now, we'll handle errors in controller
+            cb(null, true); 
         }
     }
 });
 
-
 // @route   POST api/quiz/create
 // @desc    Create a new quiz (Manual or AI generated)
-router.post('/create', auth, upload.single('pdf'), quizController.createQuiz);
+router.post('/create', auth, upload.single('file'), quizController.createQuiz);
 
 // @route   POST api/quiz/join
 // @desc    Join a quiz by code
 router.post('/join', auth, quizController.joinByCode);
-
 
 // @route   GET api/quiz/my-quizzes
 // @desc    Get all quizzes created by current user
@@ -81,6 +79,6 @@ router.put('/:id', auth, quizController.updateQuiz);
 
 // @route   POST api/quiz/generate
 // @desc    Generate quiz questions without saving (for review)
-router.post('/generate', auth, upload.single('pdf'), quizController.generateQuizQuestions);
+router.post('/generate', auth, upload.single('file'), quizController.generateQuizQuestions);
 
 module.exports = router;
