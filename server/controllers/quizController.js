@@ -52,23 +52,7 @@ const generateQuestions = async (type, content, count = 5, difficulty = 'Medium'
             try { fs.unlinkSync(content); } catch(e) {}
         }
 
-        // Logic for Handwriting/Images - Fallback to Local Bridge
-        if (type === 'image') {
-            console.log('🔄 Image detected - Routing to Local Bridge...');
-            const aiUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
-            let payloadContent = content;
-            if (fs.existsSync(content)) {
-                payloadContent = "base64:" + fs.readFileSync(content, { encoding: 'base64' });
-                try { fs.unlinkSync(content); } catch(e) {}
-            }
-            const response = await fetch(`${aiUrl}/generate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ type, content: payloadContent, count, difficulty })
-            });
-            const data = await response.json();
-            return data.questions;
-        }
+
 
         let difficultyInstruction = "";
         if (difficulty === 'Easy') {
