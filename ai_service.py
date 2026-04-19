@@ -91,15 +91,15 @@ def chunk_text(text, chunk_size=4000, overlap=500):
 # -----------------------------
 def build_prompt(type, content, num_questions, difficulty):
     level_desc = {
-        "Easy": "Introductory, direct questions.",
-        "Medium": "Structural application and flow.",
-        "Thinkable": "Analytical scenarios and logic.",
-        "Hard": "Architectural trade-offs and bottlenecks."
-    }.get(difficulty, "Engineering depth.")
+        "Easy": "Introductory, direct questions. Test basic definitions and recall. The wrong options (distractors) should be obviously incorrect.",
+        "Medium": "Require understanding concepts, not just definitions. Use plausible distractors that might trick someone with surface-level knowledge.",
+        "Thinkable": "Analytical scenarios and logic. The differences between the correct answer and the distractors should be subtle.",
+        "Hard": "Generate scenario-based or application-based questions. The differences between the correct answer and the distractors should be subtle."
+    }.get(difficulty, "Balanced questions.")
 
     system_prompt = (
-        "You are a Senior Computer Science Engineering Professor. "
-        "Test high-level engineering reasoning. Strictly avoid numerical calculations. "
+        "You are an Expert Educator and Quiz Master. "
+        "Test conceptual understanding strictly based on the provided content. "
         "Include a valid 'explanation' for each answer."
     )
     

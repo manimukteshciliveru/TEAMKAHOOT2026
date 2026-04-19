@@ -70,8 +70,8 @@ const generateQuestions = async (type, content, count = 5, difficulty = 'Medium'
         }
 
         // Logic for Handwriting/Images - Fallback to Local Bridge
-        if (type === 'image' || type === 'pptx') {
-            console.log('🔄 Image/PPT detected - Routing to Local Bridge...');
+        if (type === 'image') {
+            console.log('🔄 Image detected - Routing to Local Bridge...');
             const aiUrl = process.env.AI_SERVICE_URL || 'http://localhost:8000';
             let payloadContent = content;
             if (fs.existsSync(content)) {
@@ -87,17 +87,29 @@ const generateQuestions = async (type, content, count = 5, difficulty = 'Medium'
             return data.questions;
         }
 
+        let difficultyInstruction = "";
+        if (difficulty === 'Easy') {
+            difficultyInstruction = "Test basic definitions and recall. The wrong options (distractors) should be obviously incorrect.";
+        } else if (difficulty === 'Medium') {
+            difficultyInstruction = "Require understanding concepts, not just definitions. Use plausible distractors that might trick someone with surface-level knowledge.";
+        } else if (difficulty === 'Hard') {
+            difficultyInstruction = "Use scenario-based or application-based questions. The differences between the correct answer and the distractors should be subtle.";
+        } else {
+            difficultyInstruction = "Generate balanced questions.";
+        }
+
         // --- Prompt ---
         const prompt = `
-            You are a Senior Computer Science Engineering Professor. 
+            You are an Expert Educator and Quiz Master. 
             Generate exactly ${count} multiple-choice questions for the following content.
-            Difficulty: ${difficulty}
+            Difficulty Level: ${difficulty}
+            Difficulty Instructions: ${difficultyInstruction}
             
             CONTENT: ${contextText.substring(0, 30000)}
 
             IMPORTANT RULES:
-            - NO MATH or numerical calculations.
-            - Focus on logical reasoning and conceptual understanding.
+            - Focus on logical reasoning and conceptual understanding relevant to the provided text.
+            - Ensure questions are directly based on the provided content.
             - Format MUST be a valid JSON object.
             
             JSON FORMAT:
@@ -723,6 +735,7 @@ exports.generateQuizQuestions = async (req, res) => {
             const ext = path.extname(req.file.originalname).toLowerCase();
             if (['.jpg', '.jpeg', '.png'].includes(ext)) sourceType = 'image';
             else if (ext === '.docx') sourceType = 'docx';
+            else if (ext === '.pptx') sourceType = 'pptx';
             else if (ext === '.pdf') sourceType = 'pdf';
 
             finalQuestions = await generateQuestions(sourceType, absolutePath, questionCount, difficulty);
