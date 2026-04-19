@@ -165,29 +165,29 @@ const extractCloudText = async (type, filePath) => {
             const result = await mammoth.extractRawText({ path: filePath });
             let finalText = result && result.value ? result.value.trim() : "";
 
-            // ALWAYS scan for embedded images/graphs to ensure we miss nothing
+            // Always sequentially check up to 5 embedded images to combine with text safely
             console.log('👁️ Scanning DOCX for embedded images/graphs...');
             try {
                 const AdmZip = require('adm-zip');
                 const zip = new AdmZip(filePath);
                 const zipEntries = zip.getEntries();
                 
-                const imagePromises = zipEntries
-                    .filter(entry => entry.entryName.startsWith('word/media/') && 
-                        (entry.entryName.toLowerCase().endsWith('.png') || entry.entryName.toLowerCase().endsWith('.jpg') || entry.entryName.toLowerCase().endsWith('.jpeg')))
-                    .map(async entry => {
-                        const imageBuffer = entry.getData();
-                        const ocrResult = await Tesseract.recognize(imageBuffer, 'eng');
-                        return ocrResult.data.text;
-                    });
+                const imageEntries = zipEntries.filter(entry => entry.entryName.startsWith('word/media/') && 
+                        (entry.entryName.toLowerCase().endsWith('.png') || entry.entryName.toLowerCase().endsWith('.jpg') || entry.entryName.toLowerCase().endsWith('.jpeg')));
                 
-                if (imagePromises.length > 0) {
-                    const ocrResults = await Promise.all(imagePromises);
-                    const ocrText = ocrResults.join('\n');
-                    if (ocrText.trim().length > 0) {
-                        finalText += '\n[Image Data]:\n' + ocrText.trim();
-                        console.log(`✅ Recovered ${ocrText.trim().length} characters from ${imagePromises.length} DOCX images!`);
-                    }
+                let ocrText = '';
+                const maxImages = Math.min(imageEntries.length, 5); // Limit to 5 images to prevent server timeout
+                
+                for (let i = 0; i < maxImages; i++) {
+                    console.log(`👁️ OCR scanning DOCX image ${i+1}/${maxImages}...`);
+                    const imageBuffer = imageEntries[i].getData();
+                    const ocrResult = await Tesseract.recognize(imageBuffer, 'eng');
+                    ocrText += ocrResult.data.text + '\n';
+                }
+                
+                if (ocrText.trim().length > 0) {
+                    finalText += '\n[Supplemental Image Data]:\n' + ocrText.trim();
+                    console.log(`✅ Recovered ${ocrText.trim().length} characters from images!`);
                 }
             } catch (zipErr) {
                 console.log('⚠️ Image parsing skipped:', zipErr.message);
@@ -198,29 +198,29 @@ const extractCloudText = async (type, filePath) => {
             const result = await officeParser.parseOfficeAsync(filePath);
             let finalText = result ? result.trim() : "";
             
-            // ALWAYS scan for embedded images/graphs to ensure we miss nothing
+            // Always sequentially check up to 5 embedded images to combine with text safely
             console.log('👁️ Scanning PPTX for embedded images/graphs...');
             try {
                 const AdmZip = require('adm-zip');
                 const zip = new AdmZip(filePath);
                 const zipEntries = zip.getEntries();
                 
-                const imagePromises = zipEntries
-                    .filter(entry => entry.entryName.startsWith('ppt/media/') && 
-                        (entry.entryName.toLowerCase().endsWith('.png') || entry.entryName.toLowerCase().endsWith('.jpg') || entry.entryName.toLowerCase().endsWith('.jpeg')))
-                    .map(async entry => {
-                        const imageBuffer = entry.getData();
-                        const ocrResult = await Tesseract.recognize(imageBuffer, 'eng');
-                        return ocrResult.data.text;
-                    });
+                const imageEntries = zipEntries.filter(entry => entry.entryName.startsWith('ppt/media/') && 
+                        (entry.entryName.toLowerCase().endsWith('.png') || entry.entryName.toLowerCase().endsWith('.jpg') || entry.entryName.toLowerCase().endsWith('.jpeg')));
                 
-                if (imagePromises.length > 0) {
-                    const ocrResults = await Promise.all(imagePromises);
-                    const ocrText = ocrResults.join('\n');
-                    if (ocrText.trim().length > 0) {
-                        finalText += '\n[Image Data]:\n' + ocrText.trim();
-                        console.log(`✅ Recovered ${ocrText.trim().length} characters from ${imagePromises.length} PPTX images!`);
-                    }
+                let ocrText = '';
+                const maxImages = Math.min(imageEntries.length, 5); // Limit to 5 images to prevent server timeout
+                
+                for (let i = 0; i < maxImages; i++) {
+                    console.log(`👁️ OCR scanning PPTX image ${i+1}/${maxImages}...`);
+                    const imageBuffer = imageEntries[i].getData();
+                    const ocrResult = await Tesseract.recognize(imageBuffer, 'eng');
+                    ocrText += ocrResult.data.text + '\n';
+                }
+                
+                if (ocrText.trim().length > 0) {
+                    finalText += '\n[Supplemental Image Data]:\n' + ocrText.trim();
+                    console.log(`✅ Recovered ${ocrText.trim().length} characters from images!`);
                 }
             } catch (zipErr) {
                 console.log('⚠️ Image parsing skipped:', zipErr.message);
