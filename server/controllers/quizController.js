@@ -131,8 +131,34 @@ const generateQuestions = async (type, content, count = 5, difficulty = 'Medium'
         }
 
     } catch (err) {
-        console.error('❌ Cloud AI error:', err.message);
-        return generateMockQuestions(count);
+        console.warn(`⚠️ Cloud AI (70B) error: ${err.message}. Triggering 8B Fallback Model!`);
+        
+        try {
+            // Re-attempt using smaller, faster model with higher token limits!
+            const fallbackCompletion = await groq.chat.completions.create({
+                messages: [{ role: 'user', content: prompt }],
+                model: 'llama-3.1-8b-instant',
+                temperature: 0.8,
+                response_format: { type: "json_object" }
+            });
+
+            const fallbackContent = fallbackCompletion.choices[0].message.content;
+            const cleanJson = fallbackContent.replace(/```json/g, '').replace(/```/g, '').trim();
+            const data = JSON.parse(cleanJson);
+            
+            const filteredQuestions = (data.questions || []).filter(q => {
+                const text = q.questionText.toLowerCase();
+                const badKeywords = ['file format', 'directory', 'powerpoint', 'path'];
+                return !badKeywords.some(word => text.includes(word));
+            });
+
+            if (filteredQuestions.length > 0) return filteredQuestions;
+            
+        } catch (fallbackErr) {
+            console.error('❌ Total Cloud AI Failure:', fallbackErr.message);
+        }
+
+        return generateMockQuestions(count, "AI generation is completely overloaded by request size. Try uploading a shorter document.");
     }
 };
 
