@@ -93,6 +93,7 @@ const generateQuestions = async (type, content, count = 5, difficulty = 'Medium'
             IMPORTANT RULES:
             - Focus on logical reasoning and conceptual understanding relevant to the provided text.
             - Ensure questions are directly based on the provided content.
+            - Do NOT generate generic or repetitive questions. Be highly creative to ensure maximum variety across attempts.
             - Format MUST be a valid JSON object.
             
             JSON FORMAT:
@@ -113,7 +114,7 @@ const generateQuestions = async (type, content, count = 5, difficulty = 'Medium'
         const completion = await groq.chat.completions.create({
             messages: [{ role: 'user', content: prompt }],
             model: 'llama-3.3-70b-versatile',
-            temperature: 0.5,
+            temperature: 0.8,
             response_format: { type: "json_object" }
         });
 
@@ -162,13 +163,71 @@ const extractCloudText = async (type, filePath) => {
             return data.text;
         } else if (type === 'docx') {
             const result = await mammoth.extractRawText({ path: filePath });
-            return result.value;
+            let finalText = result && result.value ? result.value.trim() : "";
+
+            // ALWAYS scan for embedded images/graphs to ensure we miss nothing
+            console.log('👁️ Scanning DOCX for embedded images/graphs...');
+            try {
+                const AdmZip = require('adm-zip');
+                const zip = new AdmZip(filePath);
+                const zipEntries = zip.getEntries();
+                
+                const imagePromises = zipEntries
+                    .filter(entry => entry.entryName.startsWith('word/media/') && 
+                        (entry.entryName.toLowerCase().endsWith('.png') || entry.entryName.toLowerCase().endsWith('.jpg') || entry.entryName.toLowerCase().endsWith('.jpeg')))
+                    .map(async entry => {
+                        const imageBuffer = entry.getData();
+                        const ocrResult = await Tesseract.recognize(imageBuffer, 'eng');
+                        return ocrResult.data.text;
+                    });
+                
+                if (imagePromises.length > 0) {
+                    const ocrResults = await Promise.all(imagePromises);
+                    const ocrText = ocrResults.join('\n');
+                    if (ocrText.trim().length > 0) {
+                        finalText += '\n[Image Data]:\n' + ocrText.trim();
+                        console.log(`✅ Recovered ${ocrText.trim().length} characters from ${imagePromises.length} DOCX images!`);
+                    }
+                }
+            } catch (zipErr) {
+                console.log('⚠️ Image parsing skipped:', zipErr.message);
+            }
+            return finalText.length > 5 ? finalText : null;
         } else if (type === 'pptx') {
             console.log('📉 Deep Parsing PPTX slides using officeParser...');
             const result = await officeParser.parseOfficeAsync(filePath);
-            const finalText = result ? result.trim() : null;
-            console.log(`✅ Extracted PPTX Text: ${finalText ? finalText.length : 0} characters.`);
-            return finalText && finalText.length > 0 ? finalText : null;
+            let finalText = result ? result.trim() : "";
+            
+            // ALWAYS scan for embedded images/graphs to ensure we miss nothing
+            console.log('👁️ Scanning PPTX for embedded images/graphs...');
+            try {
+                const AdmZip = require('adm-zip');
+                const zip = new AdmZip(filePath);
+                const zipEntries = zip.getEntries();
+                
+                const imagePromises = zipEntries
+                    .filter(entry => entry.entryName.startsWith('ppt/media/') && 
+                        (entry.entryName.toLowerCase().endsWith('.png') || entry.entryName.toLowerCase().endsWith('.jpg') || entry.entryName.toLowerCase().endsWith('.jpeg')))
+                    .map(async entry => {
+                        const imageBuffer = entry.getData();
+                        const ocrResult = await Tesseract.recognize(imageBuffer, 'eng');
+                        return ocrResult.data.text;
+                    });
+                
+                if (imagePromises.length > 0) {
+                    const ocrResults = await Promise.all(imagePromises);
+                    const ocrText = ocrResults.join('\n');
+                    if (ocrText.trim().length > 0) {
+                        finalText += '\n[Image Data]:\n' + ocrText.trim();
+                        console.log(`✅ Recovered ${ocrText.trim().length} characters from ${imagePromises.length} PPTX images!`);
+                    }
+                }
+            } catch (zipErr) {
+                console.log('⚠️ Image parsing skipped:', zipErr.message);
+            }
+
+            console.log(`✅ Extracted PPTX Text: ${finalText.length} characters.`);
+            return finalText.length > 5 ? finalText : null;
         } else if (type === 'txt') {
             return fs.readFileSync(filePath, 'utf-8');
         } else if (type === 'image') {
