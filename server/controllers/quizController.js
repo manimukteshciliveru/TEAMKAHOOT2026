@@ -5,7 +5,7 @@ const fs = require('fs');
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const Groq = require('groq-sdk');
-const pptxParser = require('pptx-parser');
+const officeParser = require('officeparser');
 const Tesseract = require('tesseract.js');
 
 // Initialize Groq with the environment variable
@@ -164,21 +164,11 @@ const extractCloudText = async (type, filePath) => {
             const result = await mammoth.extractRawText({ path: filePath });
             return result.value;
         } else if (type === 'pptx') {
-            console.log('📉 Deep Parsing PPTX slides...');
-            const result = await pptxParser.parse(filePath);
-            
-            // Extract every bit of text from every possible shape on every slide
-            const slideTexts = result.map(slide => {
-                // If the library returns an object with text, or an array of shapes
-                if (typeof slide === 'string') return slide;
-                if (slide.text) return slide.text;
-                if (Array.isArray(slide.content)) return slide.content.join(' ');
-                return '';
-            });
-
-            const finalText = slideTexts.join('\n\n').trim();
-            console.log(`✅ Extracted PPTX Text: ${finalText.length} characters.`);
-            return finalText.length > 0 ? finalText : null;
+            console.log('📉 Deep Parsing PPTX slides using officeParser...');
+            const result = await officeParser.parseOfficeAsync(filePath);
+            const finalText = result ? result.trim() : null;
+            console.log(`✅ Extracted PPTX Text: ${finalText ? finalText.length : 0} characters.`);
+            return finalText && finalText.length > 0 ? finalText : null;
         } else if (type === 'txt') {
             return fs.readFileSync(filePath, 'utf-8');
         } else if (type === 'image') {
