@@ -195,8 +195,8 @@ const extractCloudText = async (type, filePath) => {
             return finalText.length > 5 ? finalText : null;
         } else if (type === 'pptx') {
             console.log('📉 Deep Parsing PPTX slides using officeParser...');
-            const result = await officeParser.parseOfficeAsync(filePath);
-            let finalText = result ? result.trim() : "";
+            const result = await officeParser.parseOffice(filePath);
+            let finalText = result && result.toText ? result.toText().trim() : "";
             
             // Always sequentially check up to 5 embedded images to combine with text safely
             console.log('👁️ Scanning PPTX for embedded images/graphs...');
