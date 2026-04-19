@@ -28,23 +28,6 @@ const generateMockQuestions = (count = 5) => {
     return questions;
 };
 
-// Helper to extract text in the cloud (Node.js)
-const extractCloudText = async (type, filePath) => {
-    try {
-        if (type === 'pdf') {
-            const dataBuffer = fs.readFileSync(filePath);
-            const data = await pdfParse(dataBuffer);
-            return data.text;
-        } else if (type === 'docx') {
-            const result = await mammoth.extractRawText({ path: filePath });
-            return result.value;
-        }
-        return null;
-    } catch (err) {
-        console.error('Extraction error:', err);
-        return null;
-    }
-};
 
 // CLOUD AI Generation - Using Groq Llama-3 70B
 const generateQuestions = async (type, content, count = 5, difficulty = 'Medium') => {
