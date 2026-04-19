@@ -14,11 +14,11 @@ const groq = new Groq({
 });
 
 // Mock AI Generation for fallback
-const generateMockQuestions = (count = 5) => {
+const generateMockQuestions = (count = 5, errorMsg = "AI generation is temporarily unavailable.") => {
     const questions = [];
     for (let i = 1; i <= count; i++) {
         questions.push({
-            questionText: `Sample Question ${i}: AI generation is temporarily unavailable.`,
+            questionText: `Sample Question ${i}: ${errorMsg}`,
             options: ['Option A', 'Option B', 'Option C', 'Option D'],
             correctAnswer: 'Option A',
             points: 10,
@@ -46,7 +46,7 @@ const generateQuestions = async (type, content, count = 5, difficulty = 'Medium'
                 console.log(`✅ Extracted ${contextText.length} characters.`);
             } else {
                 console.warn('⚠️ Extraction failed or empty - suppressing path leak');
-                contextText = "Academic Content Parsing Failed. Please use general knowledge to generate relevant Computer Science questions.";
+                return generateMockQuestions(count, "Failed to read text from file. Please ensure your document contains readable text and is not a scanned image.");
             }
             // Cleanup file immediately after extraction attempt
             try { fs.unlinkSync(content); } catch(e) {}
