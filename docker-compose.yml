@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  server:
+    build: ./server
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - MONGO_URI=mongodb://mongo:27017/ai-quiz-platform
+      - JWT_SECRET=supersecretkey123
+      - GEMINI_API_KEY=AIzaSyAnBdstnyRbqZx4T9QCCzm1VUpUr0a-k_4
+    depends_on:
+      - mongo
+    networks:
+      - app-network
+
+  client:
+    build: ./client
+    ports:
+      - "5173:80"
+    depends_on:
+      - server
+    networks:
+      - app-network
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo-data:

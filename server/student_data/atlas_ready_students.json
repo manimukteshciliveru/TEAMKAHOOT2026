@@ -1,0 +1,1652 @@
+[
+  {
+    "username": "24BD1A050Z",
+    "email": "24BD1A050Z",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "MAISE SUSHAANTH KUMAR",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.013Z"
+    }
+  },
+  {
+    "username": "24BD1A0511",
+    "email": "24BD1A0511",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "MANDA SRIHITHA REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.015Z"
+    }
+  },
+  {
+    "username": "24BD1A0512",
+    "email": "24BD1A0512",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "MANDADI SRI NIDHI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.015Z"
+    }
+  },
+  {
+    "username": "24BD1A0513",
+    "email": "24BD1A0513",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "MARIKANTI SHREE NITHYA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.015Z"
+    }
+  },
+  {
+    "username": "24BD1A0514",
+    "email": "24BD1A0514",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "MOHAMMED SHAHRUKH",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.015Z"
+    }
+  },
+  {
+    "username": "24BD1A0515",
+    "email": "24BD1A0515",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "NALLARI RANGA SAI SHIVANI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.015Z"
+    }
+  },
+  {
+    "username": "24BD1A0516",
+    "email": "24BD1A0516",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "NANDIGAMA SRAVANTHI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.015Z"
+    }
+  },
+  {
+    "username": "24BD1A0517",
+    "email": "24BD1A0517",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "NAYEKAM SAHITHI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0518",
+    "email": "24BD1A0518",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "NEELARAPU ABHINAV",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0519",
+    "email": "24BD1A0519",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "NELLUTLA SAI RAMANUJA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051A",
+    "email": "24BD1A051A",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "NIDHI SACHIN SHAH",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051B",
+    "email": "24BD1A051B",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "PAKALA KIRITESHWAR REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051C",
+    "email": "24BD1A051C",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "PULLETIKURTHI VENKATA SAI ABHIROOP",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051D",
+    "email": "24BD1A051D",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "PUTTA VENKATA SAI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051E",
+    "email": "24BD1A051E",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "RAHUL JUPELLI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051F",
+    "email": "24BD1A051F",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "ROLAKANTI ROHITH REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051G",
+    "email": "24BD1A051G",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "SAKAM SAI TEJA REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051H",
+    "email": "24BD1A051H",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "SANJANA JAIN",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051J",
+    "email": "24BD1A051J",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "SHAIK MOHAMMED OMAR",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051K",
+    "email": "24BD1A051K",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "SHOAIB SADIQ SALEHMOHAMED",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051L",
+    "email": "24BD1A051L",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "SHREYA PITLA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051M",
+    "email": "24BD1A051M",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "SHUBHAM INNANI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051N",
+    "email": "24BD1A051N",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "SRIGHAKOLLAPU SRIRAMA MITHILESH",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051P",
+    "email": "24BD1A051P",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "SURUKANTI RITHVIK REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051Q",
+    "email": "24BD1A051Q",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "T VENKATA SAI AMRUTHA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051R",
+    "email": "24BD1A051R",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "TADASINA SAIVIGNESH REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051T",
+    "email": "24BD1A051T",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "TANISHQ JAIN",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051U",
+    "email": "24BD1A051U",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "TARANG HARSOLA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051V",
+    "email": "24BD1A051V",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "TATTARI MEGHAV",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051W",
+    "email": "24BD1A051W",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "THARLAPALLY PRIYANKA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051X",
+    "email": "24BD1A051X",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "THORAM HIMANESH",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051Y",
+    "email": "24BD1A051Y",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "VANDANPU SATHWIKH SAI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A051Z",
+    "email": "24BD1A051Z",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "VANGURI SUSHANTH REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A05K1",
+    "email": "24BD1A05K1",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "VARANASI SNEHA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A05K2",
+    "email": "24BD1A05K2",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "VUPPALA ADVAITH",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A05K3",
+    "email": "24BD1A05K3",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "VUPPALA SHIVA KARTHIK",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0521",
+    "email": "24BD1A0521",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "A ANAGHA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0522",
+    "email": "24BD1A0522",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "AKKALA SWEEHAR",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0523",
+    "email": "24BD1A0523",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "ANUGULA LOKESH REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0524",
+    "email": "24BD1A0524",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "ARUN CHITYALA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0525",
+    "email": "24BD1A0525",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "BALASUBRAMANIAN THEERTH",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0526",
+    "email": "24BD1A0526",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "BIJIGIRI KARTHIKEYA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0527",
+    "email": "24BD1A0527",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "BIKNOOR AKSHAY BHARADWAJ",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0528",
+    "email": "24BD1A0528",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "BOLLAM SAI SHASHANK",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0529",
+    "email": "24BD1A0529",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "CHOWLAPALLY ADARSH REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052A",
+    "email": "24BD1A052A",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "DABBUGALLA PRINCY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052B",
+    "email": "24BD1A052B",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "DHAMSHETTY ANOOSH",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052C",
+    "email": "24BD1A052C",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "EADARA POORNA ASHIK",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052D",
+    "email": "24BD1A052D",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "G SREEJA REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052E",
+    "email": "24BD1A052E",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "GANGADHARI NIKSHITHA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052F",
+    "email": "24BD1A052F",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "GARLAPATI DINESH REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052G",
+    "email": "24BD1A052G",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "GOKA SWARAJ REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052H",
+    "email": "24BD1A052H",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "GOLI SAI PRASANNA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052J",
+    "email": "24BD1A052J",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "GOLLA BHARATH",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052K",
+    "email": "24BD1A052K",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "GOPU ABHINAV REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052L",
+    "email": "24BD1A052L",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "GUDIPELLY SRISHANTH KUMAR",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052M",
+    "email": "24BD1A052M",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "GUMMADAVELLI SAI BALAJI KOUSHIK",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052N",
+    "email": "24BD1A052N",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "GUNDU HIMANISH",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052P",
+    "email": "24BD1A052P",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "J VARSHA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052Q",
+    "email": "24BD1A052Q",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "JAKKALA ABHINAV YADAV",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052R",
+    "email": "24BD1A052R",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "JALLA AKHIL",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052T",
+    "email": "24BD1A052T",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "KATIKA MANISH YADAV",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052U",
+    "email": "24BD1A052U",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "KATIKANENI SAI VIKYATH",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052V",
+    "email": "24BD1A052V",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "KEETHA SUDHEER KUMAR",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052W",
+    "email": "24BD1A052W",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "KONDAVEETI PRANAV SURAJ",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052X",
+    "email": "24BD1A052X",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "KONETI SATVIKA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052Y",
+    "email": "24BD1A052Y",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "KUKKADAPU HARIKA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A052Z",
+    "email": "24BD1A052Z",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "KUNTA GANESH TEJAS KUMAR",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0531",
+    "email": "24BD1A0531",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "M SANJAY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0532",
+    "email": "24BD1A0532",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "MACHARLA ROSHEENI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0533",
+    "email": "24BD1A0533",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "MADDULA LAKSHMI SRI VANI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0534",
+    "email": "24BD1A0534",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "MALLAMPETA UDAY KIRAN",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0535",
+    "email": "24BD1A0535",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "MANAPADI NAGA SHARANYA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0536",
+    "email": "24BD1A0536",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "MARTHA SAKETH SHOWRY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0537",
+    "email": "24BD1A0537",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "NASEHA JABEEN",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0538",
+    "email": "24BD1A0538",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "NOMULA ANIRUDH REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0539",
+    "email": "24BD1A0539",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "PABBATHI BHARGAVI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053A",
+    "email": "24BD1A053A",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "PANNALA SAI RISHWANTH REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053B",
+    "email": "24BD1A053B",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "PASUPULETI PRAGNA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053C",
+    "email": "24BD1A053C",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "PATLORI ANIRUDH UMESH",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053D",
+    "email": "24BD1A053D",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "PEDURU SUNAND",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053E",
+    "email": "24BD1A053E",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "PENUMUDI RAKSHITHA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053F",
+    "email": "24BD1A053F",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "PIDAMARTHY RAMCHARAN",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053G",
+    "email": "24BD1A053G",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "POLAPALLY MANOJ KUMAR",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053H",
+    "email": "24BD1A053H",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "POLISETTY ABHISHEK",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053J",
+    "email": "24BD1A053J",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "PONNURU LAKSHMI RITHIKA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053K",
+    "email": "24BD1A053K",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "PRANAY GAURAV AIRVA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053L",
+    "email": "24BD1A053L",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "PRATAPAGIRI VARSHITH MAHENDRA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053M",
+    "email": "24BD1A053M",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "RAMPELLI SRI CHARAN",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053N",
+    "email": "24BD1A053N",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "RAVIKANTI LAHARI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053P",
+    "email": "24BD1A053P",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "RISHIKESH MANE",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053Q",
+    "email": "24BD1A053Q",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "RYALI SAMPATH LALITH KUMAR",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053R",
+    "email": "24BD1A053R",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "SAMALA MEGHANA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053T",
+    "email": "24BD1A053T",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "SAMUDRALA SAI GANESH",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053U",
+    "email": "24BD1A053U",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "SHEELAM SAI KRISHNA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053V",
+    "email": "24BD1A053V",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "THULA AVINASH",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053W",
+    "email": "24BD1A053W",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "UDARI PHANITH",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053X",
+    "email": "24BD1A053X",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "V ANURAG KRISHNA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053Y",
+    "email": "24BD1A053Y",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "VAISHNAVI KOOSAM",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A053Z",
+    "email": "24BD1A053Z",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "VEMPATI BINDU SREE",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A05K4",
+    "email": "24BD1A05K4",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "VUNDHYALA AKESH REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A05K5",
+    "email": "24BD1A05K5",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "YEDMA CHARANYA KEERTHI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0541",
+    "email": "24BD1A0541",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "AKAVEETI NISHANTH KUMAR",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0542",
+    "email": "24BD1A0542",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "ALLAGADAPA SRIKAR",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0543",
+    "email": "24BD1A0543",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "ALLURI SUNDEEP",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0544",
+    "email": "24BD1A0544",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "B VAMSHI TEJA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0545",
+    "email": "24BD1A0545",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "BUKKA VAISHNAVI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0546",
+    "email": "24BD1A0546",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "BURRA V S S R DHEERAJ KUMAR",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0547",
+    "email": "24BD1A0547",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "BYREDDY ROHAN REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0548",
+    "email": "24BD1A0548",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "CHERUKUMALLI VENKATA HIMA VARSHINI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0549",
+    "email": "24BD1A0549",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "DASARI SAHASRA SHIVATHMIKA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054A",
+    "email": "24BD1A054A",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "GADDE VIVEK",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054B",
+    "email": "24BD1A054B",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "GARAPATI RAMA KRISHNA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054C",
+    "email": "24BD1A054C",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "GODAVARI SRIVAISHNAVI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054D",
+    "email": "24BD1A054D",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "GUBBALA PRUDHVI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054E",
+    "email": "24BD1A054E",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "GUDA SRI VRINDA VARSHITHA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054F",
+    "email": "24BD1A054F",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "GUNDU VIVEK",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054G",
+    "email": "24BD1A054G",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "HEMANTH TIWARI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054H",
+    "email": "24BD1A054H",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "JAMBOJU SRIVARUN",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054J",
+    "email": "24BD1A054J",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "K VARSHIK REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054K",
+    "email": "24BD1A054K",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "KALAKOTI SAICHARAN",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054L",
+    "email": "24BD1A054L",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "KALVA BHARATH",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054M",
+    "email": "24BD1A054M",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "KAMATHAM ASRITHA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054N",
+    "email": "24BD1A054N",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "KAMISETTI JOSHUA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054P",
+    "email": "24BD1A054P",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "KONDAGUDURU ABHIRAM",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054Q",
+    "email": "24BD1A054Q",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "KOTHURU KEERTHANA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054R",
+    "email": "24BD1A054R",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "KOTLA SHIVA TARUN",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054T",
+    "email": "24BD1A054T",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "KOTTAM SAI SPOORTHY REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054U",
+    "email": "24BD1A054U",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "KOUKUNTLA HARIHARAN",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054V",
+    "email": "24BD1A054V",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "KURELLA TEJASHWINI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054W",
+    "email": "24BD1A054W",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "MADUNALA SATHVIK",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054X",
+    "email": "24BD1A054X",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "MALAVATH DHEERAJ",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054Y",
+    "email": "24BD1A054Y",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "MANGALI SIDDHARTHA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A054Z",
+    "email": "24BD1A054Z",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "MANGARAPU SREE ARNAV",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0551",
+    "email": "24BD1A0551",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "MANSANI SPOORTHY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0552",
+    "email": "24BD1A0552",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "MOHD FARHAN AHMED",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0553",
+    "email": "24BD1A0553",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "NAKKALA ADITHYA REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0554",
+    "email": "24BD1A0554",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "NALAM VENKAT",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0555",
+    "email": "24BD1A0555",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "NANNURI ROHAN KUMAR REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0556",
+    "email": "24BD1A0556",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "NEHA ROY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0557",
+    "email": "24BD1A0557",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "NOOKA SHASHANK",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0558",
+    "email": "24BD1A0558",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "NOOKALA VAMSI KRISHNA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A0559",
+    "email": "24BD1A0559",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "ORUGANTI SAI SAURISH",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055A",
+    "email": "24BD1A055A",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "PADURI BHAVYA TEJA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055B",
+    "email": "24BD1A055B",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "PARIGALA SRI HARSHA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055C",
+    "email": "24BD1A055C",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "PASHAM PRAGNAY REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055D",
+    "email": "24BD1A055D",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "PENTYALA SAMANVITH CHOWDHARY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055E",
+    "email": "24BD1A055E",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "PICHALA DEEPESH REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055F",
+    "email": "24BD1A055F",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "POGULAKONDA LAKSHMI MADHURYA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055G",
+    "email": "24BD1A055G",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "RACHA VIGNESH",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055H",
+    "email": "24BD1A055H",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "RAMINI SIDHARDH REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055J",
+    "email": "24BD1A055J",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "SAHARSH MACHENDRA BATTE",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055K",
+    "email": "24BD1A055K",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "SAI AKSHITH REDDY GURIJALA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055L",
+    "email": "24BD1A055L",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "SAMALA SREEHARSHINI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055M",
+    "email": "24BD1A055M",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "SOMALA MANU SIDDHARTHA REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055N",
+    "email": "24BD1A055N",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "SURUKONTI SHASHI PREETHAM REDDY",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055P",
+    "email": "24BD1A055P",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "SYED IBRAHIM MEHDI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055Q",
+    "email": "24BD1A055Q",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "THATIPALLY HASINI",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055R",
+    "email": "24BD1A055R",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "THOTA AISHWARYA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055T",
+    "email": "24BD1A055T",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "TINGIRIKAR LOKESH",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055U",
+    "email": "24BD1A055U",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "UPPUGANDLA SRAVIKA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055V",
+    "email": "24BD1A055V",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "VANGAPALLY RAMYA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055W",
+    "email": "24BD1A055W",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "VIVEKANANDA REDDY CHALLA",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055X",
+    "email": "24BD1A055X",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "VUNDAVALLI SAI RUTHVIK",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  },
+  {
+    "username": "24BD1A055Y",
+    "email": "24BD1A055Y",
+    "password": "$2b$10$OLWad72wOXEoBb5NtHw/S.s217LTY6ARlz3gVsTrXez1t3QOil7oq",
+    "role": "student",
+    "name": "VURA SURYA VENKAT",
+    "createdAt": {
+      "$date": "2026-02-22T12:50:47.016Z"
+    }
+  }
+]
