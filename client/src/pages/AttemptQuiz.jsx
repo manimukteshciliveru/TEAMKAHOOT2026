@@ -1133,6 +1133,10 @@ export default function AttemptQuiz() {
             const nextIdx = parseInt(questionIndex);
             setCurrentQuestion(nextIdx);
 
+            // CRITICAL FIX: This event is sent on both join_room (initial sync) AND teacher navigation.
+            // Clearing waitingForState here ensures first-time joiners are not stuck on the sync screen.
+            setWaitingForState(false);
+
             // Reset state for new question
             if (quiz && !quiz.duration) {
                 setTimeLeft(quiz.timerPerQuestion || 30);
@@ -1378,23 +1382,11 @@ export default function AttemptQuiz() {
                 // LIVE QUIZ PAGE REFRESH: restore session from localStorage and auto-rejoin
                 if (res.data.isLive && res.data.status === 'started') {
                     setWaitingForState(true);
-                    if (authUser) {
-                        const sessionData = {
-                            quizId: id,
-                            username: authUser.username,
-                            role: 'student',
-                            _id: authUser._id
-                        };
-                        localStorage.setItem(`live_quiz_session_student_${id}`, JSON.stringify(sessionData));
-                        socket.emit('join_room', {
-                            quizId: id,
-                            user: {
-                                username: authUser.username,
-                                role: 'student',
-                                _id: authUser._id
-                            }
-                        });
-                    }
+                    // SAFETY TIMEOUT: If the server never sends change_question (e.g. room state missing),
+                    // clear the sync screen after 8 seconds so the student isn't stuck forever.
+                    setTimeout(() => setWaitingForState(false), 8000);
+                    // join_room is sent in the dedicated authUser effect below so it fires even
+                    // if authUser loads asynchronously after this fetchQuiz effect runs.
                     // Skip previousResult handling — live quiz session is restored
                 } else {
                     // If there's a previous result (Completed or In-Progress)
@@ -1431,17 +1423,6 @@ export default function AttemptQuiz() {
         };
         fetchQuiz();
 
-        if (authUser) {
-            socket.emit('join_room', {
-                quizId: id,
-                user: {
-                    username: authUser.username,
-                    role: 'student',
-                    _id: authUser._id
-                }
-            });
-        }
-
         socket.on('new_question_added', ({ question, questionIndex, totalQuestions }) => {
             console.log('New question received:', question);
             setNewQuestionNotification({ question, questionIndex, totalQuestions });
@@ -1465,6 +1446,25 @@ export default function AttemptQuiz() {
             socket.off('question_leaderboard');
         };
     }, [id, navigate]);
+
+    // SEPARATE EFFECT: Emit join_room once authUser is available.
+    // This is needed because authUser may load async from context AFTER fetchQuiz runs.
+    useEffect(() => {
+        if (!authUser || !quiz) return;
+        const sessionData = {
+            quizId: id,
+            username: authUser.username,
+            role: 'student',
+            _id: authUser._id
+        };
+        if (quiz.isLive) {
+            localStorage.setItem(`live_quiz_session_student_${id}`, JSON.stringify(sessionData));
+        }
+        socket.emit('join_room', {
+            quizId: id,
+            user: { username: authUser.username, role: 'student', _id: authUser._id }
+        });
+    }, [authUser, quiz, id]);
 
     const setAnswersFromHistory = (historyAnswers) => {
         const newAnswers = {};
