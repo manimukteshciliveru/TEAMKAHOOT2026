@@ -431,11 +431,17 @@ io.on('connection', (socket) => {
         questionIndex = parseInt(questionIndex);
         console.log(`Student ${studentId} submitted answer for question ${questionIndex}`);
 
-        // PERSISTENCE: Save to In-Memory Room State for immediate access/recovery
         const state = roomState.get(quizId) || {};
         const currentProgress = state.progress || {};
 
         if (!currentProgress[studentId]) currentProgress[studentId] = {};
+        
+        // --- STRICT MODE BLOCKER: Check for duplicate submissions ---
+        if (currentProgress[studentId][questionIndex] && currentProgress[studentId][questionIndex].answered) {
+            console.log(`[STRICT MODE] Prevented duplicate answer for student ${studentId} on question ${questionIndex}`);
+            // Let the client know it was ignored but don't crash or save anything
+            return;
+        }
         
         // We will update the progress dictionary *again* down below once we know if it was correct or not.
         // For now, mark it superficially as 'answered: true' so UI updates immediately (optimistic).

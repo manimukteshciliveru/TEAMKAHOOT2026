@@ -1069,6 +1069,7 @@ export default function AttemptQuiz() {
     const hasInitializedTimer = useRef(false);
     const [isOnline, setIsOnline] = useState(navigator.onLine);
     const [missionComplete, setMissionComplete] = useState(false);
+    const [waitingForState, setWaitingForState] = useState(false);
 
     // Block browser back button for students during active quiz
     useEffect(() => {
@@ -1162,6 +1163,8 @@ export default function AttemptQuiz() {
                  setAnswers(prev => ({ ...prev, ...recoveredAnswers }));
             }
             
+            setWaitingForState(false);
+            
             if (state.quizStatus === 'started') {
                  setTimeLeft(state.remainingTime);
             } else if (state.quizStatus === 'finished') {
@@ -1210,7 +1213,7 @@ export default function AttemptQuiz() {
             socket.off('connect');
             socket.off('disconnect');
         };
-    }, [quiz]);
+    }, [quiz, authUser, id, navigate]);
 
     // Offline / Reconnect detection — restore session and re-join room on reconnect
     useEffect(() => {
@@ -1218,15 +1221,7 @@ export default function AttemptQuiz() {
         const handleOnline = () => {
             setIsOnline(true);
             if (quiz?.isLive && authUser) {
-                // Restore saved session position
-                const saved = localStorage.getItem(`live_quiz_session_${id}`);
-                if (saved) {
-                    try {
-                        const { currentQuestion: savedQ, answers: savedAnswers } = JSON.parse(saved);
-                        if (savedQ !== undefined) setCurrentQuestion(savedQ);
-                        if (savedAnswers) setAnswers(prev => ({ ...prev, ...savedAnswers }));
-                    } catch (e) { console.error('Session restore error:', e); }
-                }
+                // Restore state handled by server restoreState event
                 // Re-join room so teacher participant count updates
                 const sessionStr = localStorage.getItem(`live_quiz_session_student_${id}`);
                 if (sessionStr) {
@@ -1382,21 +1377,7 @@ export default function AttemptQuiz() {
 
                 // LIVE QUIZ PAGE REFRESH: restore session from localStorage and auto-rejoin
                 if (res.data.isLive && res.data.status === 'started') {
-                    const saved = localStorage.getItem(`live_quiz_session_${id}`);
-                    if (saved) {
-                        try {
-                            const { currentQuestion: savedQ, answers: savedAnswers } = JSON.parse(saved);
-                            if (savedQ !== undefined) setCurrentQuestion(savedQ);
-                            if (savedAnswers) {
-                                setAnswers(savedAnswers);
-                                // Mark previously submitted questions as answered
-                                const answeredSet = new Set(
-                                    Object.keys(savedAnswers).map(Number)
-                                );
-                                setAnsweredQuestions(answeredSet);
-                            }
-                        } catch (e) { console.error('Session restore on refresh:', e); }
-                    }
+                    setWaitingForState(true);
                     if (authUser) {
                         const sessionData = {
                             quizId: id,
@@ -1579,6 +1560,20 @@ export default function AttemptQuiz() {
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
             <Loader2 className="animate-spin text-indigo-600" size={48} />
+        </div>
+    );
+
+    if (waitingForState) return (
+        <div className="min-h-screen bg-[#0f172a] flex flex-col items-center justify-center p-6 text-white text-center font-inter relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#ff6b00]/10 rounded-full blur-[120px] -mr-64 -mt-64"></div>
+            <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] -ml-64 -mb-64"></div>
+            <div className="relative z-10 space-y-8 animate-in fade-in zoom-in duration-500 max-w-md w-full">
+                <Loader2 className="animate-spin text-[#ff6b00] mx-auto mb-4" size={64} />
+                <h1 className="text-4xl font-black italic uppercase tracking-tighter">Synchronizing...</h1>
+                <p className="text-gray-400 font-bold uppercase tracking-widest text-xs leading-relaxed">
+                    Restoring your state securely from the server.
+                </p>
+            </div>
         </div>
     );
 
