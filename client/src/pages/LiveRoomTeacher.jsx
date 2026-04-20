@@ -178,7 +178,6 @@ export default function LiveRoomTeacher() {
         }, 5000);
         return () => clearInterval(heartbeatId);
     }, [quiz, user]);
-
     const handleStartQuiz = () => {
         if (quiz) {
             socket.emit('start_quiz', quiz._id);

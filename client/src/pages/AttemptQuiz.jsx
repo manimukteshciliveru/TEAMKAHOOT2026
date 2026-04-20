@@ -55,7 +55,6 @@ export default function AttemptQuiz() {
         }, 5000);
         return () => clearInterval(heartbeatTimer);
     }, [quiz, authUser, id, isReviewMode, result]);
-
     // Listen for Teacher Events (timer sync, quiz end only — students navigate themselves)
     useEffect(() => {
         socket.on('timer_update', ({ additionalSeconds }) => {

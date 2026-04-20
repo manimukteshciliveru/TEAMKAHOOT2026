@@ -66,7 +66,6 @@ setInterval(() => {
         }
     }
 }, 5000);
-
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
@@ -135,7 +134,6 @@ io.on('connection', (socket) => {
             }
         }
     });
-
     socket.on('reconnectUser', ({ quizId, user }) => {
         socket.join(quizId);
         socketToUser.set(socket.id, { quizId, username: user.username });

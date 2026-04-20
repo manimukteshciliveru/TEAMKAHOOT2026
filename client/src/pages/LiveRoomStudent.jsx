@@ -234,7 +234,6 @@ export default function LiveRoomStudent() {
         }, 5000);
         return () => clearInterval(heartbeatId);
     }, [quiz, user]);
-
     if (loading) return (
         <DashboardLayout role="student">
             <div className="flex items-center justify-center min-h-[60vh]">
