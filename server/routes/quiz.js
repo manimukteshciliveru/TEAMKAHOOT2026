@@ -50,8 +50,8 @@ router.put('/publish/:id', auth, quizController.publishQuiz);
 router.get('/live', auth, quizController.getLiveQuizzes);
 
 // @route   GET api/quiz/stats
-// @desc    Get performance stats for teacher
-router.get('/stats', auth, quizController.getTeacherStats);
+// @desc    Get performance stats for faculty
+router.get('/stats', auth, quizController.getFacultyStats);
 
 // @route   GET api/quiz/:id
 // @desc    Get quiz by ID
@@ -69,9 +69,17 @@ router.delete('/:id', auth, quizController.deleteQuiz);
 // @desc    Get leaderboard for a quiz
 router.get('/leaderboard/:quizId', auth, quizController.getLeaderboard);
 
-// @route   GET api/quiz/history
+// @route   GET api/quiz/history/student
 // @desc    Get current student's quiz history (completed and missed)
 router.get('/history/student', auth, quizController.getStudentHistory);
+
+// @route   GET api/quiz/report/:id
+// @desc    Get detailed student quiz report
+router.get('/report/:id', auth, quizController.getStudentQuizReport);
+
+// @route   GET api/quiz/faculty-report/:id
+// @desc    Get detailed faculty analytics dashboard
+router.get('/faculty-report/:id', auth, quizController.getQuizStats);
 
 // @route   PUT api/quiz/:id
 // @desc    Update a quiz

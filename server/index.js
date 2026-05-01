@@ -3,14 +3,51 @@ const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
-const path = require('path'); // MISSING IMPORT FIXED
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
+const path = require('path');
 const connectDB = require('./config/db');
+const { compareAnswers } = require('./utils/helpers');
+const ocrService = require('./utils/ocrService');
+
+// Initialize OCR Service Pool
+ocrService.initialize();
+
+if (!process.env.JWT_SECRET) {
+    console.error('❌ FATAL ERROR: JWT_SECRET is not defined in .env');
+    process.exit(1);
+}
 
 const app = express();
 const server = http.createServer(app);
 
+// Models
+const User = require('./models/User');
+const Quiz = require('./models/Quiz');
+const Result = require('./models/Result');
+
 // Connect Database
-connectDB();
+connectDB().then(async () => {
+    // ── One-time migration: patch any quizzes with null joinCode ──
+    // Old documents pre-dating the unique joinCode index cause E11000 on new saves.
+    try {
+        const nullCodeQuizzes = await Quiz.find({ joinCode: { $in: [null, undefined, ''] } });
+        if (nullCodeQuizzes.length > 0) {
+            console.log(`🔧 Patching ${nullCodeQuizzes.length} quizzes with missing joinCode...`);
+            for (const quiz of nullCodeQuizzes) {
+                let code;
+                do {
+                    code = Math.floor(100000 + Math.random() * 900000).toString();
+                } while (await Quiz.findOne({ joinCode: code, _id: { $ne: quiz._id } }));
+                await Quiz.findByIdAndUpdate(quiz._id, { joinCode: code });
+            }
+            console.log('✅ joinCode migration complete.');
+        }
+    } catch (migErr) {
+        console.error('⚠️ joinCode migration error (non-fatal):', migErr.message);
+    }
+});
 
 // Ensure uploads directory exists
 const fs = require('fs');
@@ -21,32 +58,89 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 // Middleware
+// DEPLOYMENT READY: Consolidated CORS configuration
+const allowedOrigins = [
+    process.env.CLIENT_URL,
+    process.env.FRONTEND_URL, 
+    'http://localhost:5173', 
+    'http://localhost:3000'
+].filter(Boolean);
+
+console.log(`🌐 CORS allowed origins:`, allowedOrigins);
+
 app.use(cors({
-    origin: ['https://kmit-khaoot.vercel.app', 'http://localhost:5173'],
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) === -1) {
+            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        return callback(null, true);
+    },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token']
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'x-requested-with', 'Accept']
 }));
-app.use(express.json());
+
+// Security Headers - Moved after CORS
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }, // Allow cross-origin resources
+    crossOriginOpenerPolicy: { policy: "unsafe-none" }
+}));
+
+app.use(cookieParser()); // Parse cookies
+
+// Rate Limiting - Moved after CORS so preflight requests aren't blocked without headers
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // Limit each IP to 100 requests per windowMs
+    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    message: 'Too many requests from this IP, please try again after 15 minutes'
+});
+app.use('/api/', limiter);
+
+app.use(express.json({ limit: '10kb' })); // Body size limit
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
+// Custom CSRF Protection Middleware
+// Since we use HttpOnly cookies, we need to prevent CSRF.
+// We'll use the 'Custom Header' approach: non-GET requests must include 'x-requested-with' header.
+app.use((req, res, next) => {
+    const protectedMethods = ['POST', 'PUT', 'DELETE', 'PATCH'];
+    if (protectedMethods.includes(req.method)) {
+        const csrfHeader = req.headers['x-requested-with'];
+        if (csrfHeader !== 'XMLHttpRequest') {
+            return res.status(403).json({ msg: 'CSRF protection: Invalid or missing header' });
+        }
+    }
+    next();
+});
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/quiz', require('./routes/quiz'));
 
-// Socket.io Setup
 const io = new Server(server, {
     cors: {
-        origin: "*", // Allow all origins for the live app
-        methods: ["GET", "POST"]
+        origin: allowedOrigins,
+        methods: ["GET", "POST", "PUT", "DELETE"],
+        credentials: true
     }
 });
 
+// DEPLOYMENT READY: Health Check for Render/Monitoring
+app.get('/health', (req, res) => res.status(200).json({ status: 'ok', uptime: process.uptime() }));
+
+module.exports = { app, server, io };
+
 // Store participants for each room
-const roomParticipants = new Map(); // { quizId: [{ username, role, socketId }] }
+const roomParticipants = new Map(); // { quizId: [{ name, role, socketId }] }
 // Store current state for each room
 const roomState = new Map(); // { quizId: { currentQuestion: 0, status: 'started', endTime: TIMESTAMP } }
 // Map to track which room/user a socket belongs to
-const socketToUser = new Map(); // { socketId: { quizId, username } }
+const socketToUser = new Map(); // { socketId: { quizId, name } }
 
 // HEARTBEAT SWEEPER: Every 5 seconds, check for stale connections
 setInterval(() => {
@@ -58,7 +152,7 @@ setInterval(() => {
                 p.isOnline = false;
                 p.socketId = null;
                 updated = true;
-                console.log(`[Heartbeat Timeout] User ${p.username} marked offline in room ${quizId}`);
+                console.log(`[Heartbeat Timeout] User ${p.name} marked offline in room ${quizId}`);
             }
         });
         if (updated) {
@@ -69,31 +163,71 @@ setInterval(() => {
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
-    socket.on('join_room', ({ quizId, user }) => {
+    socket.on('join_room', async ({ quizId, user }) => {
         socket.join(quizId);
 
-        // Track this socket's association for disconnect cleanup
-        socketToUser.set(socket.id, { quizId, username: user.username });
+        const userId = (user._id || user.id)?.toString();
+        let userName = user.name || user.username || user.displayName || 'Unknown';
+        let realUser = user;
 
-        if (!roomParticipants.has(quizId)) {
-            roomParticipants.set(quizId, []);
+        try {
+            // Verify identity against DB instead of trusting client payload
+            const dbUser = await User.findById(userId);
+            if (dbUser) {
+                userName = dbUser.name;
+                realUser = { 
+                    ...user, 
+                    name: dbUser.name, 
+                    username: dbUser.username || dbUser.name,
+                    rollNumber: dbUser.rollNumber,
+                    _id: dbUser._id.toString(),
+                    role: dbUser.role
+                };
+            }
+        } catch (e) {
+            console.error("Socket Auth Error:", e);
+        }
+        
+        // Track this socket's association for disconnect cleanup
+        socketToUser.set(socket.id, { quizId, name: userName, userId });
+
+        if (!roomParticipants.has(quizId.toString())) {
+            roomParticipants.set(quizId.toString(), []);
         }
 
-        const participants = roomParticipants.get(quizId);
-        const existingIdx = participants.findIndex(p => p.username === user.username);
+        const participants = roomParticipants.get(quizId.toString());
+        
+        // Match by ID or fallback to name
+        const existingIdx = participants.findIndex(p => 
+            (userId && p._id?.toString() === userId) || 
+            (userName !== 'Unknown' && (p.name === userName || p.username === userName))
+        );
 
-        const userData = { ...user, socketId: socket.id, isOnline: true, lastSeen: Date.now() };
+        const userData = { 
+            ...realUser, 
+            name: userName, 
+            username: userName, 
+            _id: userId, 
+            socketId: socket.id, 
+            isOnline: true, 
+            lastSeen: Date.now() 
+        };
+
         if (existingIdx !== -1) {
             participants[existingIdx] = userData;
-        } else if (user.username) {
+        } else {
             participants.push(userData);
         }
 
-        console.log(`User ${user.username} (${user.role}) joined room ${quizId}. Total participants: ${participants.length}`);
-        io.to(quizId).emit('participants_update', participants);
+        // Clean up any other duplicates that might have slipped in (by _id)
+        const uniqueParticipants = Array.from(new Map(participants.map(p => [p._id?.toString() || p.username || p.socketId, p])).values());
+        roomParticipants.set(quizId.toString(), uniqueParticipants);
+
+        console.log(`Verified User ${userData.name} joined room ${quizId}. Total: ${uniqueParticipants.length}`);
+        io.to(quizId).emit('participants_update', uniqueParticipants);
 
         // SYNC STATE
-        const state = roomState.get(quizId);
+        const state = roomState.get(quizId.toString());
         if (state) {
             if (state.status === 'started') socket.emit('quiz_started');
             if (state.currentQuestion !== undefined) socket.emit('change_question', { questionIndex: state.currentQuestion });
@@ -105,7 +239,7 @@ io.on('connection', (socket) => {
             }
             // Send persisted progress to teacher
             if (state.progress) {
-                console.log(`Sending progress history to ${user.username} (${user.role})`);
+                console.log(`Sending progress history to ${user.name} (${user.role})`);
                 socket.emit('progress_history', state.progress);
             }
             // Sync leaderboard for all participants (Teacher and Students) on join/reconnect
@@ -119,66 +253,91 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('heartbeat', ({ quizId, userId }) => {
-        if (!quizId) return;
-        const participants = roomParticipants.get(quizId);
+    socket.on('heartbeat', ({ quizId, id, userId }) => {
+        const effectiveId = id || userId;
+        if (!quizId || !effectiveId) return;
+        const participants = roomParticipants.get(quizId.toString());
         if (participants) {
-            const p = participants.find(part => part._id === userId || part.username === userId);
+            const p = participants.find(part => 
+                (part._id && (part._id === effectiveId || part._id.toString() === effectiveId.toString())) || 
+                part.name === effectiveId || 
+                part.username === effectiveId
+            );
             if (p) {
                 p.lastSeen = Date.now();
                 if (!p.isOnline) {
                     p.isOnline = true;
                     // If they were previously offline, broadcast they are back online immediately
                     io.to(quizId).emit('participants_update', participants);
+                    console.log(`[Heartbeat] User ${p.username || p.name} is back online in room ${quizId}`);
                 }
             }
         }
     });
     socket.on('reconnectUser', ({ quizId, user }) => {
         socket.join(quizId);
-        socketToUser.set(socket.id, { quizId, username: user.username });
+        const userName = user.name || user.username || user.displayName || 'Unknown';
+        const userId = (user._id || user.id)?.toString();
+        
+        socketToUser.set(socket.id, { quizId, name: userName, userId });
 
-        if (!roomParticipants.has(quizId)) {
-            roomParticipants.set(quizId, []);
+        if (!roomParticipants.has(quizId.toString())) {
+            roomParticipants.set(quizId.toString(), []);
         }
 
-        const participants = roomParticipants.get(quizId);
-        const existingIdx = participants.findIndex(p => p.username === user.username);
+        const participants = roomParticipants.get(quizId.toString());
+        
+        // Match by ID or fallback to name
+        const existingIdx = participants.findIndex(p => 
+            (userId && p._id?.toString() === userId) || 
+            (userName !== 'Unknown' && (p.name === userName || p.username === userName))
+        );
 
-        // ROBUSTNESS: If client forgot the _id, try to restore it from existing participant entry
-        const effectiveUser = { ...user };
-        if (!effectiveUser._id && existingIdx !== -1 && participants[existingIdx]._id) {
-            effectiveUser._id = participants[existingIdx]._id;
+        // ROBUSTNESS: Restore missing data from existing entry
+        const effectiveUser = { 
+            ...user, 
+            name: user.name || userName, 
+            username: user.username || userName, 
+            _id: userId
+        };
+        
+        if (existingIdx !== -1) {
+            const existing = participants[existingIdx];
+            if (!effectiveUser.name || effectiveUser.name === 'Unknown') effectiveUser.name = existing.name;
+            if (!effectiveUser._id) effectiveUser._id = existing._id?.toString();
         }
 
         const userData = { ...effectiveUser, socketId: socket.id, isOnline: true, lastSeen: Date.now() };
+        
         if (existingIdx !== -1) {
             participants[existingIdx] = userData;
-        } else if (user.username) {
+        } else {
             participants.push(userData);
         }
 
-        console.log(`User ${user.username} (${user.role}) reconnected to room ${quizId}. ID: ${userData._id}`);
-        io.to(quizId).emit('participants_update', participants);
+        // Deduplicate
+        const uniqueParticipants = Array.from(new Map(participants.map(p => [p._id?.toString() || p.username || p.socketId, p])).values());
+        roomParticipants.set(quizId.toString(), uniqueParticipants);
+
+        console.log(`User ${userData.name} reconnected. ID: ${userData._id}`);
+        io.to(quizId).emit('participants_update', uniqueParticipants);
 
         const sendRestoreState = async () => {
-            let state = roomState.get(quizId) || {};
+            let state = roomState.get(quizId.toString()) || {};
             
             // Re-fetch/Rebuild state logic ...
              if (!state.leaderboard || !state.progress) {
                  try {
-                     const Result = require('./models/Result');
-                     const Quiz = require('./models/Quiz');
                      const quizInfo = await Quiz.findById(quizId);
                      
                      if (quizInfo) {
-                         const allResults = await Result.find({ quiz: quizId }).populate('student', 'username');
+                         const allResults = await Result.find({ quiz: quizId }).populate('student', 'name');
                          
                          // Rebuild Leaderboard
                          const leaderboard = allResults
                              .map(r => ({
                                  studentId: r.student?._id || null,
-                                 username: r.student?.username || 'Unknown',
+                                 name: r.student?.name || 'Unknown',
                                  currentScore: r.score || 0,
                                  totalTimeTaken: r.totalTimeTaken || 0,
                                  lastAnsweredAt: r.lastAnsweredAt || r.startedAt || new Date(),
@@ -211,7 +370,7 @@ io.on('connection', (socket) => {
                          });
 
                          state = { ...state, leaderboard, progress, status: quizInfo.status };
-                         roomState.set(quizId, state);
+                         roomState.set(quizId.toString(), state);
                      }
                  } catch (err) {
                      console.error('Error rebuilding state on reconnect:', err);
@@ -236,7 +395,7 @@ io.on('connection', (socket) => {
                  socket.emit('change_question', { questionIndex: state.currentQuestion });
              }
              socket.emit('restoreState', restoreStatePayload);
-             console.log(`Sent restoreState to ${user.username}`);
+             console.log(`Sent restoreState to ${user.name}`);
         };
         
         sendRestoreState();
@@ -244,7 +403,6 @@ io.on('connection', (socket) => {
 
     socket.on('start_quiz', async (quizId) => {
         try {
-            const Quiz = require('./models/Quiz');
             const quiz = await Quiz.findById(quizId);
             if (!quiz) return;
 
@@ -258,8 +416,8 @@ io.on('connection', (socket) => {
             }
             const endTime = Date.now() + durationMs;
 
-            const state = roomState.get(quizId) || {};
-            roomState.set(quizId, { ...state, status: 'started', currentQuestion: 0, endTime });
+            const state = roomState.get(quizId.toString()) || {};
+            roomState.set(quizId.toString(), { ...state, status: 'started', currentQuestion: 0, endTime });
 
             await Quiz.findByIdAndUpdate(quizId, { status: 'started' });
             io.to(quizId).emit('quiz_started');
@@ -287,10 +445,8 @@ io.on('connection', (socket) => {
     });
 
     socket.on('end_quiz', async (quizId) => {
-        roomState.delete(quizId);
+        roomState.delete(quizId.toString());
         try {
-            const Quiz = require('./models/Quiz');
-            const Result = require('./models/Result');
 
             // 1. Finalize all in-progress student results FIRST
             await Result.updateMany(
@@ -304,11 +460,11 @@ io.on('connection', (socket) => {
             );
 
             // 2. Compute final leaderboard rankings from persisted Results
-            const allResults = await Result.find({ quiz: quizId }).populate('student', 'username');
+            const allResults = await Result.find({ quiz: quizId }).populate('student', 'name');
             const finalLeaderboard = allResults
                 .map(r => ({
                     studentId: r.student?._id?.toString(),
-                    username: r.student?.username || 'Unknown',
+                    name: r.student?.name || 'Unknown',
                     currentScore: r.score || 0,
                     totalTimeTaken: r.totalTimeTaken || 0,
                     lastAnsweredAt: r.lastAnsweredAt || r.startedAt || new Date(),
@@ -322,12 +478,12 @@ io.on('connection', (socket) => {
                 .map((item, index) => ({ ...item, rank: index + 1 }));
 
             // 3. Save final leaderboard to Quiz document (for teacher My Quizzes view)
-            const topStudent = finalLeaderboard[0]?.username || null;
+            const topStudent = finalLeaderboard[0]?.name || null;
             await Quiz.findByIdAndUpdate(quizId, {
                 status: 'finished',
                 finalLeaderboard: finalLeaderboard.map(r => ({
                     studentId: r.studentId,
-                    username: r.username,
+                    name: r.name,
                     currentScore: r.currentScore,
                     answeredQuestions: r.answeredQuestions,
                     rank: r.rank
@@ -354,7 +510,6 @@ io.on('connection', (socket) => {
     socket.on('add_question', async ({ quizId, question }) => {
         console.log(`Adding question to quiz: ${quizId}`);
         try {
-            const Quiz = require('./models/Quiz');
             const quiz = await Quiz.findById(quizId);
 
             if (quiz) {
@@ -378,7 +533,6 @@ io.on('connection', (socket) => {
     // Handle teacher changing question (Navigation)
     socket.on('change_question', async ({ quizId, questionIndex }) => {
         try {
-            const Quiz = require('./models/Quiz');
             const quiz = await Quiz.findById(quizId);
             if (!quiz) return;
 
@@ -388,10 +542,10 @@ io.on('connection', (socket) => {
                 endTime = Date.now() + ((quiz.timerPerQuestion || 30) * 1000);
             }
 
-            const state = roomState.get(quizId) || {};
+            const state = roomState.get(quizId.toString()) || {};
             if (endTime) state.endTime = endTime;
 
-            roomState.set(quizId, { ...state, currentQuestion: parseInt(questionIndex) });
+            roomState.set(quizId.toString(), { ...state, currentQuestion: parseInt(questionIndex) });
 
             io.to(quizId).emit('change_question', { questionIndex });
             if (endTime) io.to(quizId).emit('sync_timer', { timeLeft: Math.max(0, Math.ceil((endTime - Date.now()) / 1000)) });
@@ -401,23 +555,23 @@ io.on('connection', (socket) => {
     });
 
     // Tracking which question a student is currently viewing
-    socket.on('student_question_focus', ({ quizId, studentId, username, questionIndex }) => {
-        console.log(`Student ${username} focused on question ${questionIndex} in quiz ${quizId}`);
+    socket.on('student_question_focus', ({ quizId, studentId, name, questionIndex }) => {
+        console.log(`Student ${name} focused on question ${questionIndex} in quiz ${quizId}`);
 
         // Broadcast to teacher only (or everyone in room if room UI needs it)
         io.to(quizId).emit('student_focus_update', {
             studentId,
-            username,
+            name,
             questionIndex
         });
     });
 
     // Increase time for the current question
     socket.on('increase_time', ({ quizId, additionalSeconds }) => {
-        const state = roomState.get(quizId);
+        const state = roomState.get(quizId.toString());
         if (state && state.endTime) {
             state.endTime += (additionalSeconds * 1000);
-            roomState.set(quizId, { ...state, endTime: state.endTime });
+            roomState.set(quizId.toString(), { ...state, endTime: state.endTime });
 
             const timeLeft = Math.max(0, Math.ceil((state.endTime - Date.now()) / 1000));
             io.to(quizId).emit('timer_update', { additionalSeconds });
@@ -426,14 +580,14 @@ io.on('connection', (socket) => {
     });
 
     // Handle individual question submission during live quiz
-    socket.on('submit_question_answer', async ({ quizId, studentId, questionIndex, answer, timeRemaining }) => {
+    socket.on('submit_question_answer', async ({ quizId, studentId, questionIndex, answer, timeRemaining, timeTaken }) => {
         // Ensure questionIndex is an integer
         questionIndex = parseInt(questionIndex);
         console.log(`Student ${studentId} submitted answer for question ${questionIndex}`);
 
-        const state = roomState.get(quizId) || {};
+        const state = roomState.get(quizId.toString()) || {};
         const currentProgress = state.progress || {};
-
+ 
         if (!currentProgress[studentId]) currentProgress[studentId] = {};
         
         // --- STRICT MODE BLOCKER: Check for duplicate submissions ---
@@ -446,21 +600,18 @@ io.on('connection', (socket) => {
         // We will update the progress dictionary *again* down below once we know if it was correct or not.
         // For now, mark it superficially as 'answered: true' so UI updates immediately (optimistic).
         currentProgress[studentId][questionIndex] = { answered: true, isCorrect: false };
-
-        roomState.set(quizId, { ...state, progress: currentProgress });
+ 
+        roomState.set(quizId.toString(), { ...state, progress: currentProgress });
 
         try {
-            const Quiz = require('./models/Quiz');
-            const Result = require('./models/Result');
-
             const quiz = await Quiz.findById(quizId);
             if (!quiz) return;
 
             // Calculate time taken for this question
             const timerMax = quiz.duration > 0 ? (quiz.duration * 60) : (quiz.timerPerQuestion || 30);
-            const qTimeTaken = Math.max(0, timerMax - (timeRemaining || 0));
+            const qTimeTaken = timeTaken !== undefined ? timeTaken : Math.max(0, timerMax - (timeRemaining || 0));
 
-            let result = await Result.findOne({ quiz: quizId, student: studentId }).populate('student', 'username');
+            let result = await Result.findOne({ quiz: quizId, student: studentId }).populate('student', 'name');
 
             if (!result) {
                 result = new Result({
@@ -480,22 +631,7 @@ io.on('connection', (socket) => {
             if (quiz.questions[questionIndex]) {
                 const question = quiz.questions[questionIndex];
 
-                // Extra robust normalization
-                const studentAnswer = (answer || "").toString().trim().toLowerCase();
-                const correctAnswer = (question.correctAnswer || "").toString().trim().toLowerCase();
-
-                let isCorrect = studentAnswer === correctAnswer;
-
-                // Fallback for AI-generated labels (A, B, C...) or indices (0, 1, 2...)
-                if (!isCorrect && question.options) {
-                    const labels = ['a', 'b', 'c', 'd', 'e'];
-                    const labelIdx = labels.indexOf(correctAnswer);
-                    if (labelIdx !== -1 && question.options[labelIdx]) {
-                        isCorrect = studentAnswer === question.options[labelIdx].toString().trim().toLowerCase();
-                    } else if (correctAnswer !== '' && !isNaN(correctAnswer) && question.options[parseInt(correctAnswer)]) {
-                        isCorrect = studentAnswer === question.options[parseInt(correctAnswer)].toString().trim().toLowerCase();
-                    }
-                }
+                const isCorrect = compareAnswers(answer, question.correctAnswer, question.options);
 
                 const points = isCorrect ? (question.points || 10) : 0;
 
@@ -529,7 +665,7 @@ io.on('connection', (socket) => {
                 const updatedProgress = state.progress || {};
                 if (!updatedProgress[studentId]) updatedProgress[studentId] = {};
                 updatedProgress[studentId][questionIndex] = { answered: true, isCorrect };
-                roomState.set(quizId, { ...state, progress: updatedProgress });
+                roomState.set(quizId.toString(), { ...state, progress: updatedProgress });
 
                 result.status = 'in-progress';
                 if (!result.startedAt) result.startedAt = Date.now();
@@ -542,18 +678,18 @@ io.on('connection', (socket) => {
                 // Broadcast student progress to teacher with isCorrect
                 io.to(quizId).emit('student_progress_update', {
                     studentId: studentId.toString(),
-                    username: result.student ? result.student.username : 'Student',
+                    name: result.student ? result.student.name : 'Student',
                     questionIndex,
                     answered: true,
                     isCorrect // FIX: Added isCorrect to broadcast
                 });
 
                 // Leaderboard calculation with speed tie-breaker
-                const allResults = await Result.find({ quiz: quizId }).populate('student', 'username');
+                const allResults = await Result.find({ quiz: quizId }).populate('student', 'name');
                 const leaderboard = allResults
                     .map(r => ({
                         studentId: r.student._id,
-                        username: r.student.username,
+                        name: r.student.name,
                         currentScore: r.score,
                         totalTimeTaken: r.totalTimeTaken || 0,
                         lastAnsweredAt: r.lastAnsweredAt || r.startedAt || new Date(),
@@ -574,12 +710,20 @@ io.on('connection', (socket) => {
                     .map((item, index) => ({ ...item, rank: index + 1 }));
 
                 // Track leaderboard in state
-                const updatedState = roomState.get(quizId) || {};
-                roomState.set(quizId, { ...updatedState, leaderboard });
+                const updatedState = roomState.get(quizId.toString()) || {};
+                
+                const liveInsights = {
+                    topStudent: leaderboard[0]?.name || null,
+                    totalSubmissions: leaderboard.length,
+                    averageScore: leaderboard.reduce((acc, curr) => acc + curr.currentScore, 0) / (leaderboard.length || 1)
+                };
+
+                roomState.set(quizId.toString(), { ...updatedState, leaderboard, liveInsights });
 
                 io.to(quizId).emit('question_leaderboard', {
                     questionIndex,
-                    leaderboard
+                    leaderboard,
+                    liveInsights
                 });
             }
         } catch (err) {
@@ -591,28 +735,12 @@ io.on('connection', (socket) => {
     socket.on('submit_new_question', async ({ quizId, studentId, questionIndex, answer }) => {
         console.log(`Student ${studentId} submitted answer for question ${questionIndex} in quiz ${quizId}`);
         try {
-            const Quiz = require('./models/Quiz');
-            const Result = require('./models/Result');
-
             const quiz = await Quiz.findById(quizId);
             const result = await Result.findOne({ quiz: quizId, student: studentId });
 
             if (quiz && result && quiz.questions[questionIndex]) {
-                const studentAnswer = (answer || "").toString().trim().toLowerCase();
-                const correctAnswer = (question.correctAnswer || "").toString().trim().toLowerCase();
-
-                let isCorrect = studentAnswer === correctAnswer;
-
-                // Fallback for AI-generated labels (A, B, C...) or indices (0, 1, 2...)
-                if (!isCorrect && question.options) {
-                    const labels = ['a', 'b', 'c', 'd', 'e'];
-                    const labelIdx = labels.indexOf(correctAnswer);
-                    if (labelIdx !== -1 && question.options[labelIdx]) {
-                        isCorrect = studentAnswer === question.options[labelIdx].toString().trim().toLowerCase();
-                    } else if (correctAnswer !== '' && !isNaN(correctAnswer) && question.options[parseInt(correctAnswer)]) {
-                        isCorrect = studentAnswer === question.options[parseInt(correctAnswer)].toString().trim().toLowerCase();
-                    }
-                }
+                const question = quiz.questions[questionIndex];
+                const isCorrect = compareAnswers(answer, question.correctAnswer, question.options);
 
                 const points = isCorrect ? (question.points || 10) : 0;
 
@@ -645,10 +773,12 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         const info = socketToUser.get(socket.id);
         if (info) {
-            const { quizId, username } = info;
+            const { quizId, name, userId } = info;
             const participants = roomParticipants.get(quizId);
             if (participants) {
-                const existingIdx = participants.findIndex(p => p.username === username);
+                const existingIdx = participants.findIndex(p => 
+                    (userId && p._id?.toString() === userId) || (p.name === name)
+                );
                 if (existingIdx !== -1) {
                     // Update the user to offline instead of removing them
                     participants[existingIdx].isOnline = false;

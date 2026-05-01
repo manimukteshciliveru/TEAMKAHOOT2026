@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../utils/api';
 import DashboardLayout from '../components/DashboardLayout';
+import { useToast } from '../context/ToastContext';
+import Swal from 'sweetalert2';
+import socket from '../utils/socket';
+import AuthContext from '../context/AuthContext';
+import { useContext } from 'react';
+import { Loader2, } from 'lucide-react';
 import {
     FileText,
     CheckCircle,
@@ -15,13 +21,17 @@ import {
     Search,
     Calendar,
     HelpCircle,
-    Play
+    Play,
+    BarChart3,
+    Copy
 } from 'lucide-react';
 
 export default function MyQuizzes() {
     const [quizzes, setQuizzes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const { showToast } = useToast();
+    const { user } = useContext(AuthContext);
 
     const fetchQuizzes = async () => {
         try {
@@ -38,6 +48,22 @@ export default function MyQuizzes() {
         fetchQuizzes();
     }, []);
 
+    // Listen for background job updates to refresh the list automatically
+    useEffect(() => {
+        if (!user) return;
+        
+        const channel = `job_status_${user._id}`;
+        socket.on(channel, (data) => {
+            console.log('Library Job Update:', data);
+            if (data.status === 'completed') {
+                showToast(data.message, 'success');
+                fetchQuizzes();
+            }
+        });
+
+        return () => socket.off(channel);
+    }, [user, showToast]);
+
     const updateQuizMode = async (quizId, mode) => {
         try {
             let payload = {};
@@ -51,24 +77,39 @@ export default function MyQuizzes() {
 
             const res = await api.put(`/quiz/${quizId}`, payload);
             setQuizzes(quizzes.map(q => q._id === quizId ? res.data : q));
+            showToast('Quiz mode updated successfully', 'success');
         } catch (err) {
             console.error('Error updating quiz mode', err);
-            alert(err.response?.data?.msg || 'Failed to update quiz mode');
+            showToast(err.response?.data?.msg || 'Failed to update quiz mode', 'error');
         }
     };
 
     const handleDelete = async (quizId) => {
-        if (!window.confirm('Are you sure you want to delete this quiz? All results will be permanently removed.')) {
-            return;
-        }
+        const result = await Swal.fire({
+            title: 'Delete Quiz?',
+            text: "This will permanently remove this quiz and all its results. You can't reverse this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Delete it',
+            cancelButtonText: 'Cancel'
+        });
 
-        try {
-            await api.delete(`/quiz/${quizId}`);
-            setQuizzes(quizzes.filter(q => q._id !== quizId));
-        } catch (err) {
-            console.error('Error deleting quiz', err);
-            alert('Failed to delete quiz');
+        if (result.isConfirmed) {
+            try {
+                await api.delete(`/quiz/${quizId}`);
+                setQuizzes(quizzes.filter(q => q._id !== quizId));
+                showToast('Quiz deleted successfully', 'success');
+            } catch (err) {
+                console.error('Error deleting quiz', err);
+                showToast('Failed to delete quiz', 'error');
+            }
         }
+    };
+
+    const copyToClipboard = (code) => {
+        if (!code) return;
+        navigator.clipboard.writeText(code);
+        showToast('Join Code copied to clipboard!', 'success');
     };
 
     const filteredQuizzes = quizzes.filter(quiz =>
@@ -77,7 +118,7 @@ export default function MyQuizzes() {
     );
 
     return (
-        <DashboardLayout role="teacher">
+        <DashboardLayout role="faculty">
             <div className="space-y-12 pb-20 relative">
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-[#ff6b00]/5 rounded-full blur-[120px] pointer-events-none -z-10 animate-pulse"></div>
 
@@ -107,7 +148,7 @@ export default function MyQuizzes() {
                 ) : filteredQuizzes.length > 0 ? (
                     <div className="grid grid-cols-1 gap-8">
                         {filteredQuizzes.map((quiz) => (
-                            <div key={quiz._id} className="bg-white/5 rounded-[3rem] border border-white/10 p-8 lg:p-12 flex flex-col lg:flex-row lg:items-center justify-between gap-10 hover:bg-white/10 transition-all group relative overflow-hidden ring-1 ring-white/5">
+                            <div key={quiz._id} className="bg-white/5 rounded-[3rem] border border-white/10 p-8 lg:p-12 flex flex-col lg:flex-row lg:items-center justify-between gap-10 hover:bg-white/10 transition-all group relative overflow-x-auto ring-1 ring-white/5 no-scrollbar">
                                 <div className="flex flex-col sm:flex-row items-start gap-8 z-10">
                                     <div className={`p-8 rounded-[2.5rem] transition-all group-hover:scale-110 shrink-0 shadow-2xl ${quiz.isActive ? 'bg-[#ff6b00] text-white' : 'bg-white/5 text-slate-700 border border-white/10'}`}>
                                         <FileText size={40} />
@@ -125,16 +166,38 @@ export default function MyQuizzes() {
                                             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 italic bg-white/5 px-4 py-2 rounded-xl border border-white/5">
                                                 <HelpCircle size={14} className="text-[#ff6b00]" /> {quiz.questions?.length || 0} Questions
                                             </div>
-                                            <div className={`flex items-center gap-3 px-4 py-2 rounded-xl border text-[10px] font-black uppercase tracking-[0.2em] italic ${quiz.isActive ? 'text-green-500 border-green-500/20 bg-green-500/5' : 'text-slate-600 border-white/5 bg-white/5'}`}>
-                                                <div className={`w-2 h-2 rounded-full ${quiz.isActive ? 'bg-green-500 animate-pulse' : 'bg-slate-700'}`}></div>
-                                                {quiz.isActive ? (quiz.isLive ? 'LIVE' : 'ASSESSMENT') : 'OFFLINE'}
+                                            <div className="group/code flex items-center gap-3 px-5 py-2 bg-[#ff6b00]/10 border border-[#ff6b00]/30 rounded-xl cursor-pointer hover:bg-[#ff6b00] transition-all" onClick={() => copyToClipboard(quiz.joinCode)}>
+                                                <span className="text-sm font-black text-[#ff6b00] group-hover:text-white italic tracking-widest">{quiz.joinCode}</span>
+                                                <Copy size={14} className="text-[#ff6b00] group-hover:text-white" />
                                             </div>
+                                             {quiz.scheduledStartTime && (
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-orange-400 italic bg-white/5 px-4 py-2 rounded-xl border border-orange-500/10">
+                                                        <Clock size={14} /> From: {new Date(quiz.scheduledStartTime).toLocaleString()}
+                                                    </div>
+                                                    {quiz.scheduledEndTime && (
+                                                        <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-red-400 italic bg-white/5 px-4 py-2 rounded-xl border border-red-500/10">
+                                                            <Clock size={14} /> Until: {new Date(quiz.scheduledEndTime).toLocaleString()}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                             )}
+                                             <div className={`flex items-center gap-3 px-4 py-2 rounded-xl border text-[10px] font-black uppercase tracking-[0.2em] italic ${quiz.status === 'processing' ? 'text-orange-400 border-orange-500/20 bg-orange-500/5' : quiz.isActive ? 'text-green-500 border-green-500/20 bg-green-500/5' : 'text-slate-600 border-white/5 bg-white/5'}`}>
+                                                  <div className={`w-2 h-2 rounded-full ${quiz.status === 'processing' ? 'bg-orange-500 animate-spin' : quiz.isActive ? 'bg-green-500 animate-pulse' : 'bg-slate-700'}`}></div>
+                                                  {quiz.status === 'processing' ? 'GENERATING QUESTIONS...' : quiz.isActive ? (quiz.isLive ? 'LIVE' : 'ASSESSMENT') : 'OFFLINE'}
+                                              </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="flex flex-wrap items-center gap-4 z-10 w-full lg:w-auto">
-                                    <div className="flex flex-col sm:flex-row items-center gap-4 bg-white/5 p-4 rounded-[2.5rem] border border-white/5 w-full lg:w-auto">
+                                    {quiz.status === 'processing' ? (
+                                         <div className="flex items-center gap-4 bg-white/5 p-6 rounded-[2rem] border border-white/5">
+                                             <Loader2 className="animate-spin text-[#ff6b00]" size={24} />
+                                             <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest italic animate-pulse">AI is working...</p>
+                                         </div>
+                                     ) : (
+                                        <div className="flex flex-col sm:flex-row items-center gap-4 bg-white/5 p-4 pr-10 rounded-[2.5rem] border border-white/5 w-full lg:w-auto">
                                         {/* Performance Stats */}
                                         <div className="flex items-center gap-6 px-6 py-2 border-r border-white/10 hidden sm:flex">
                                             <div className="text-center">
@@ -149,73 +212,55 @@ export default function MyQuizzes() {
 
                                         {/* Action Buttons */}
                                         <div className="flex items-center gap-3 w-full sm:w-auto">
-                                            {quiz.isAssessment ? (
+                                            {quiz.isActive ? (
                                                 <>
-                                                    {quiz.isActive ? (
+                                                    {quiz.isLive && quiz.status !== 'finished' ? (
+                                                        <Link
+                                                            to={`/live-room-faculty/${quiz.joinCode}`}
+                                                            className="flex-1 sm:flex-none bg-indigo-600 text-white px-8 py-3 rounded-2xl font-black italic uppercase tracking-tighter transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 text-sm"
+                                                        >
+                                                            <Play size={18} /> Enter Lobby
+                                                        </Link>
+                                                    ) : (
+                                                        <Link
+                                                            to={`/faculty-report/${quiz._id}`}
+                                                            className="flex-1 sm:flex-none bg-[#ff6b00] text-white px-8 py-3 rounded-2xl font-black italic uppercase tracking-tighter transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-[#ff6b00]/20 text-sm"
+                                                        >
+                                                            <BarChart3 size={18} /> View Stats
+                                                        </Link>
+                                                    )}
+                                                    {quiz.isAssessment && (
                                                         <button
                                                             onClick={() => updateQuizMode(quiz._id, 'close')}
                                                             className="flex-1 sm:flex-none bg-red-500/10 text-red-500 border border-red-500/20 px-6 py-3 rounded-2xl font-black italic uppercase tracking-tighter transition-all hover:bg-red-500 hover:text-white active:scale-95 flex items-center justify-center gap-2 text-sm"
                                                         >
                                                             <XCircle size={18} /> Close
                                                         </button>
-                                                    ) : (
-                                                        <button
-                                                            onClick={() => updateQuizMode(quiz._id, 'assessment')}
-                                                            className="flex-1 sm:flex-none bg-[#ff6b00]/10 text-[#ff6b00] border border-[#ff6b00]/20 px-6 py-3 rounded-2xl font-black italic uppercase tracking-tighter transition-all hover:bg-[#ff6b00] hover:text-white active:scale-95 flex items-center justify-center gap-2 text-sm"
-                                                        >
-                                                            <Play size={18} /> Reopen
-                                                        </button>
                                                     )}
                                                 </>
                                             ) : (
-                                                <>
-                                                    {quiz.status !== 'finished' ? (
-                                                        <Link
-                                                            to={`/live-room-teacher/${quiz.joinCode}`}
-                                                            className="flex-1 sm:flex-none bg-[#ff6b00] text-white px-6 py-3 rounded-2xl font-black italic uppercase tracking-tighter transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 shadow-lg shadow-[#ff6b00]/20 text-sm"
-                                                        >
-                                                            <ExternalLink size={18} /> Room
-                                                        </Link>
-                                                    ) : (
-                                                        <Link
-                                                            to={`/leaderboard/${quiz._id}`}
-                                                            className="flex-1 sm:flex-none bg-green-500/10 text-green-500 border border-green-500/20 px-6 py-3 rounded-2xl font-black italic uppercase tracking-tighter transition-all hover:bg-green-500 hover:text-white active:scale-95 flex items-center justify-center gap-2 text-sm"
-                                                        >
-                                                            <Trophy size={18} /> Results
-                                                        </Link>
-                                                    )}
-                                                </>
+                                                <div className="flex gap-2">
+                                                    <Link
+                                                        to={`/faculty-report/${quiz._id}`}
+                                                        className="flex-1 sm:flex-none bg-blue-500/10 text-blue-500 border border-blue-500/20 px-6 py-3 rounded-2xl font-black italic uppercase tracking-tighter transition-all hover:bg-blue-500 hover:text-white active:scale-95 flex items-center justify-center gap-2 text-sm"
+                                                    >
+                                                        <BarChart3 size={18} /> View Stats
+                                                    </Link>
+                                                </div>
                                             )}
 
                                             <button
                                                 onClick={() => handleDelete(quiz._id)}
-                                                className="p-3 text-slate-700 hover:text-red-500 transition-all group/del shrink-0"
+                                                className="p-3 bg-white/5 hover:bg-red-500/10 text-slate-600 hover:text-red-500 rounded-xl border border-white/5 transition-all group/del shrink-0 ml-2 shadow-inner"
                                                 title="Delete Quiz"
                                             >
-                                                <Trash2 size={20} className="group-hover/del:scale-110 transition-transform" />
+                                                <Trash2 size={18} className="group-hover/del:scale-110 transition-transform" />
                                             </button>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Mini Leaderboard - Displayed within the card */}
-                                {quiz.results && quiz.results.length > 0 && (
-                                    <div className="w-full lg:w-72 bg-white/5 rounded-3xl p-6 border border-white/5 space-y-3">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest italic">Top Students</span>
-                                            <Trophy size={12} className="text-[#ff6b00]" />
-                                        </div>
-                                        {quiz.results.slice(0, 3).map((res, idx) => (
-                                            <div key={idx} className="flex items-center justify-between text-xs bg-black/20 rounded-xl p-3 border border-white/5">
-                                                <div className="flex items-center gap-3">
-                                                    <span className={`font-black italic ${idx === 0 ? 'text-yellow-500' : idx === 1 ? 'text-slate-300' : 'text-amber-600'}`}>#{idx + 1}</span>
-                                                    <span className="font-bold text-white uppercase truncate w-24">{res.studentName}</span>
-                                                </div>
-                                                <span className="font-black text-[#ff6b00] italic">{res.score}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+
 
                                 <div className="absolute -right-20 -bottom-20 opacity-[0.02] text-white group-hover:rotate-12 transition-transform duration-700 pointer-events-none">
                                     <Activity size={300} />

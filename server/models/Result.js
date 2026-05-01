@@ -29,7 +29,8 @@ const ResultSchema = new mongoose.Schema({
         selectedOption: String,
         correctOption: String,
         isCorrect: Boolean,
-        timeTaken: Number
+        timeTaken: Number,
+        aiInsight: String
     }],
     status: {
         type: String,

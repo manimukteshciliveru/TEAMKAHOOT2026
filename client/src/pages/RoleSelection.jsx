@@ -2,20 +2,22 @@ import React, { useContext } from 'react';
 import AuthContext from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { GraduationCap, Presentation, ShieldAlert, ChevronRight } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 export default function RoleSelection() {
     const { setRole } = useContext(AuthContext);
     const navigate = useNavigate();
+    const { showToast } = useToast();
 
     const handleRoleSelect = async (role) => {
         try {
             await setRole(role);
-            if (role === 'teacher') navigate('/teacher-dashboard');
+            if (role === 'faculty') navigate('/faculty-dashboard');
             if (role === 'student') navigate('/student-dashboard');
             if (role === 'admin') navigate('/admin-dashboard');
         } catch (err) {
             console.error(err);
-            alert('Error setting role');
+            showToast('Error setting role', 'error');
         }
     };
 
@@ -36,7 +38,7 @@ export default function RoleSelection() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full relative z-10">
                 {/* Teacher Role */}
                 <button
-                    onClick={() => handleRoleSelect('teacher')}
+                    onClick={() => handleRoleSelect('faculty')}
                     className="group relative bg-white/5 backdrop-blur-xl border border-white/10 p-10 rounded-[3rem] hover:bg-white/10 transition-all duration-500 overflow-hidden text-left"
                 >
                     <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600/10 rounded-full blur-3xl -mr-16 -mt-16 group-hover:bg-indigo-600/20 transition-colors"></div>

@@ -32,7 +32,7 @@ export default function Performance() {
         : 0;
 
     return (
-        <DashboardLayout role="teacher">
+        <DashboardLayout role="faculty">
             <div className="space-y-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>

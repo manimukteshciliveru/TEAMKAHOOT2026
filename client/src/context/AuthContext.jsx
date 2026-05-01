@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect } from 'react';
 import api from '../utils/api';
+import toast from 'react-hot-toast';
 
 const AuthContext = createContext(null);
 
@@ -24,20 +25,34 @@ export const AuthProvider = ({ children }) => {
         checkUser();
     }, []);
 
-    const login = async (email, password) => {
-        const res = await api.post('/auth/login', { email, password });
-        localStorage.setItem('token', res.data.token);
-        const userRes = await api.get('/auth/me');
-        setUser(userRes.data);
-        return userRes.data;
+    const login = async (identifier, password) => {
+        try {
+            const res = await api.post('/auth/login', { identifier, password });
+            localStorage.setItem('token', res.data.token);
+            const userRes = await api.get('/auth/me');
+            setUser(userRes.data);
+            toast.success(`Welcome back, ${userRes.data.name || 'User'}!`, {
+                icon: '👋',
+            });
+            return userRes.data;
+        } catch (err) {
+            toast.error(err.response?.data?.msg || 'Login failed. Please check your credentials.');
+            throw err;
+        }
     };
 
-    const register = async (username, email, password) => {
-        const res = await api.post('/auth/register', { username, email, password });
-        localStorage.setItem('token', res.data.token);
-        const userRes = await api.get('/auth/me');
-        setUser(userRes.data);
-        return userRes.data;
+    const register = async (name, identifier, password) => {
+        try {
+            const res = await api.post('/auth/register', { name, identifier, password });
+            localStorage.setItem('token', res.data.token);
+            const userRes = await api.get('/auth/me');
+            setUser(userRes.data);
+            toast.success('Account created successfully!');
+            return userRes.data;
+        } catch (err) {
+            toast.error(err.response?.data?.msg || 'Registration failed.');
+            throw err;
+        }
     };
 
     const setRole = async (role) => {
@@ -50,6 +65,9 @@ export const AuthProvider = ({ children }) => {
     const logout = () => {
         localStorage.removeItem('token');
         setUser(null);
+        toast('Logged out successfully', {
+            icon: '🚪',
+        });
     };
 
     return (

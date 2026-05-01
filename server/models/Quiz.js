@@ -38,12 +38,21 @@ const QuizSchema = new mongoose.Schema({
         type: Number,
         default: 30 // seconds
     },
+    paceControl: {
+        type: Boolean,
+        default: true
+    },
     duration: {
         type: Number,
         default: 0 // minutes, 0 = no limit
     },
     topic: {
         type: String
+    },
+    timerMode: {
+        type: String,
+        enum: ['per-question', 'total'],
+        default: 'total'
     },
     isLive: {
         type: Boolean,
@@ -55,8 +64,8 @@ const QuizSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['waiting', 'started', 'finished'],
-        default: 'waiting' // Live quizzes start in waiting, changed when teacher starts
+        enum: ['processing', 'waiting', 'started', 'finished'],
+        default: 'waiting' 
     },
     createdAt: {
         type: Date,
@@ -64,7 +73,7 @@ const QuizSchema = new mongoose.Schema({
     },
     finalLeaderboard: [{
         studentId: String,
-        username: String,
+        name: String,
         currentScore: Number,
         answeredQuestions: Number,
         rank: Number
@@ -73,6 +82,15 @@ const QuizSchema = new mongoose.Schema({
         hardestQuestion: String,
         easiestQuestion: String,
         topStudent: String
+    },
+    allowedSections: [{ type: String }],
+    allowedStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    allowedBranches: [{ type: String }],
+    scheduledStartTime: {
+        type: Date
+    },
+    scheduledEndTime: {
+        type: Date
     }
 });
 

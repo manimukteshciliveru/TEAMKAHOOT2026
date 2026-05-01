@@ -16,8 +16,8 @@ const ProtectedRoute = ({ children, roles = [], allowNone = false }) => {
     // If we are on role selection page (allowNone=true), checking if role is already set
     if (allowNone) {
         if (user.role !== 'none') {
-            if (user.role === 'teacher') return <Navigate to="/teacher-dashboard" />;
-            if (user.role === 'student') return <Navigate to="/student-dashboard" />;
+            if (user.role === 'faculty') return <Navigate to="/faculty-dashboard" />;
+            if (user.role === 'student') return <Navigate to="/home" />;
             if (user.role === 'admin') return <Navigate to="/admin-dashboard" />;
         }
         return children;
@@ -31,8 +31,8 @@ const ProtectedRoute = ({ children, roles = [], allowNone = false }) => {
     // Role based access control
     if (roles && !roles.includes(user.role)) {
         // Redirect to their appropriate dashboard
-        if (user.role === 'teacher') return <Navigate to="/teacher-dashboard" />;
-        if (user.role === 'student') return <Navigate to="/student-dashboard" />;
+        if (user.role === 'faculty') return <Navigate to="/faculty-dashboard" />;
+        if (user.role === 'student') return <Navigate to="/home" />;
         if (user.role === 'admin') return <Navigate to="/admin-dashboard" />;
         return <Navigate to="/login" />; // Fallback
     }

@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import Swal from 'sweetalert2';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import {
@@ -9,7 +10,12 @@ import {
     User,
     BarChart3,
     Settings,
-    Clock
+    Clock,
+    Shield,
+    Briefcase,
+    GraduationCap,
+    Menu,
+    X as CloseIcon
 } from 'lucide-react';
 
 export default function DashboardLayout({ children, role }) {
@@ -17,22 +23,39 @@ export default function DashboardLayout({ children, role }) {
     const location = useLocation();
     const navigate = useNavigate();
 
-    const handleLogout = () => {
-        logout();
-        navigate('/login');
+    const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+
+    const handleLogout = async () => {
+        const result = await Swal.fire({
+            title: 'Ready to Leave?',
+            text: 'You will need to login again to access your dashboard.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Logout',
+            cancelButtonText: 'Stay Logged In',
+            confirmButtonColor: '#ff6b00',
+            background: '#1e293b',
+            color: '#fff'
+        });
+
+        if (result.isConfirmed) {
+            logout();
+            navigate('/login');
+        }
     };
 
     const isActive = (path) => location.pathname === path;
 
-    const teacherLinks = [
-        { name: 'Home', path: '/teacher-dashboard', icon: LayoutDashboard },
+    const facultyLinks = [
+        { name: 'Home', path: '/faculty-dashboard', icon: LayoutDashboard },
         { name: 'My Quizzes', path: '/my-quizzes', icon: BookOpen },
-        { name: 'Performance', path: '/performance', icon: BarChart3 },
+
     ];
 
     const studentLinks = [
-        { name: 'Home', path: '/student-dashboard', icon: LayoutDashboard },
-        { name: 'Assessments', path: '/assessments', icon: BookOpen },
+        { name: 'Home', path: '/home', icon: LayoutDashboard },
+        { name: 'Join', path: '/join', icon: PlusCircle },
+        { name: 'History', path: '/history', icon: Clock },
     ];
 
     const adminLinks = [
@@ -41,7 +64,7 @@ export default function DashboardLayout({ children, role }) {
     ];
 
     let links = [];
-    if (role === 'teacher') links = teacherLinks;
+    if (role === 'faculty') links = facultyLinks;
     else if (role === 'student') links = studentLinks;
     else if (role === 'admin') links = adminLinks;
 
@@ -52,10 +75,17 @@ export default function DashboardLayout({ children, role }) {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex justify-between h-20">
                         {/* Logo & Branding */}
-                        <div className="flex items-center gap-8">
+                        <div className="flex items-center gap-4 md:gap-8">
+                            {/* Mobile Menu Button */}
+                            <button 
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                className="md:hidden p-2 text-slate-400 hover:text-white transition-colors"
+                            >
+                                {isMenuOpen ? <CloseIcon size={24} /> : <Menu size={24} />}
+                            </button>
                             <div className="flex-shrink-0 flex items-center gap-3">
-                                <div className="bg-[#ff6b00] p-2 rounded-xl shadow-[0_0_20px_rgba(255,107,0,0.3)]">
-                                    <span className="text-2xl">🔥</span>
+                                <div className="bg-white p-1.5 rounded-xl shadow-lg">
+                                    <img src="/kmit-logo.png" alt="KMIT Logo" className="w-7 h-7 object-contain" />
                                 </div>
                                 <h1 className="text-2xl font-black text-white tracking-tight italic">
                                     KMIT <span className="text-[#ff6b00]">Kahoot</span>
@@ -85,15 +115,25 @@ export default function DashboardLayout({ children, role }) {
 
                         {/* User Actions */}
                         <div className="flex items-center gap-4">
-                            <div className="hidden sm:flex items-center gap-3 px-4 py-2 bg-white/5 rounded-2xl border border-white/10">
-                                <div className="w-8 h-8 rounded-full bg-[#ff6b00] flex items-center justify-center text-white font-black shadow-sm ring-2 ring-white/10">
-                                    {user?.username?.[0]?.toUpperCase()}
+                            {/* Live Status Indicator */}
+                            <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-green-400/10 border border-green-400/20 rounded-2xl">
+                                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-[0_0_10px_rgba(74,222,128,0.5)]"></div>
+                                <span className="text-[10px] font-black text-green-400 uppercase tracking-widest">Live Status</span>
+                            </div>
+
+                            <Link to="/profile" className="hidden sm:flex items-center gap-3 px-4 py-2 bg-white/5 rounded-2xl border border-white/10 hover:bg-white/10 transition-all cursor-pointer group">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-black shadow-sm ring-2 ring-white/10 group-hover:scale-110 transition-transform ${
+                                    role === 'admin' ? 'bg-rose-600' : 
+                                    role === 'faculty' ? 'bg-indigo-600' : 'bg-[#ff6b00]'
+                                }`}>
+                                    {role === 'admin' ? <Shield size={16} /> : 
+                                     role === 'faculty' ? <Briefcase size={16} /> : <GraduationCap size={16} />}
                                 </div>
                                 <div className="text-left">
-                                    <p className="text-xs font-black text-white leading-none">{user?.username}</p>
+                                    <p className="text-xs font-black text-white leading-none group-hover:text-[#ff6b00] transition-colors">{user?.name || user?.username || 'User'}</p>
                                     <p className="text-[10px] text-[#ff6b00] font-bold uppercase mt-1 tracking-widest">{role}</p>
                                 </div>
-                            </div>
+                            </Link>
 
                             <button
                                 onClick={handleLogout}
@@ -105,6 +145,48 @@ export default function DashboardLayout({ children, role }) {
                         </div>
                     </div>
                 </div>
+
+                {/* Mobile Menu Dropdown */}
+                {isMenuOpen && (
+                    <div className="md:hidden bg-[#0f172a] border-b border-white/5 animate-in slide-in-from-top duration-300">
+                        <div className="px-4 pt-2 pb-6 space-y-2">
+                            {links.map((link) => {
+                                const Icon = link.icon;
+                                return (
+                                    <Link
+                                        key={link.path}
+                                        to={link.path}
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className={`flex items-center gap-3 px-4 py-3 rounded-xl text-base font-bold transition-all ${isActive(link.path)
+                                            ? 'bg-[#ff6b00] text-white'
+                                            : 'text-slate-400 hover:bg-white/5'
+                                            }`}
+                                    >
+                                        <Icon size={20} />
+                                        {link.name}
+                                    </Link>
+                                );
+                            })}
+                            <div className="pt-4 mt-4 border-t border-white/5">
+                                <Link 
+                                    to="/profile" 
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-400 hover:bg-white/5"
+                                >
+                                    <User size={20} />
+                                    Profile
+                                </Link>
+                                <button
+                                    onClick={handleLogout}
+                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:bg-red-400/10"
+                                >
+                                    <LogOut size={20} />
+                                    Logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </header>
 
             {/* Main Content */}

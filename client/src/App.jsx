@@ -4,31 +4,36 @@ import { AuthProvider } from './context/AuthContext';
 import AuthContext from './context/AuthContext';
 import Login from './pages/Login';
 import RoleSelection from './pages/RoleSelection';
-import TeacherDashboard from './pages/TeacherDashboard';
+import FacultyDashboard from './pages/FacultyDashboard';
 import CreateQuizText from './pages/CreateQuizText';
 import CreateQuizPDF from './pages/CreateQuizPDF';
 import CreateQuizTopic from './pages/CreateQuizTopic';
-import StudentDashboard from './pages/StudentDashboard';
-import Assessments from './pages/Assessments';
+import JoinQuiz from './pages/JoinQuiz';
+import Home from './pages/Home';
 import MyQuizzes from './pages/MyQuizzes';
 import AttemptQuiz from './pages/AttemptQuiz';
-import Performance from './pages/Performance';
 import AdminDashboard from './pages/AdminDashboard';
-import LiveRoomTeacher from './pages/LiveRoomTeacher';
+import LiveRoomFaculty from './pages/LiveRoomFaculty';
 import LiveRoomStudent from './pages/LiveRoomStudent';
 import Leaderboard from './pages/Leaderboard';
+import UserManagement from './pages/UserManagement';
+import Profile from './pages/Profile';
+import History from './pages/History';
+import QuizReport from './pages/QuizReport';
+import FacultyQuizReport from './pages/FacultyQuizReport';
+import { ToastProvider } from './context/ToastContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Home component that redirects based on auth and role
-const Home = () => {
+const HomeRedirect = () => {
   const { user, loading } = useContext(AuthContext);
 
   if (loading) return null;
   if (!user) return <Navigate to="/login" />;
 
   if (user.role === 'none') return <Navigate to="/select-role" />;
-  if (user.role === 'teacher') return <Navigate to="/teacher-dashboard" />;
-  if (user.role === 'student') return <Navigate to="/student-dashboard" />;
+  if (user.role === 'faculty') return <Navigate to="/faculty-dashboard" />;
+  if (user.role === 'student') return <Navigate to="/home" />;
   if (user.role === 'admin') return <Navigate to="/admin-dashboard" />;
 
   return <Navigate to="/login" />;
@@ -36,7 +41,8 @@ const Home = () => {
 
 function App() {
   return (
-    <AuthProvider>
+    <ToastProvider>
+      <AuthProvider>
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -47,56 +53,74 @@ function App() {
             </ProtectedRoute>
           } />
 
-          <Route path="/teacher-dashboard" element={
-            <ProtectedRoute roles={['teacher']}>
-              <TeacherDashboard />
+          <Route path="/faculty-dashboard" element={
+            <ProtectedRoute roles={['faculty']}>
+              <FacultyDashboard />
             </ProtectedRoute>
           } />
 
           <Route path="/create-quiz/text" element={
-            <ProtectedRoute roles={['teacher']}>
+            <ProtectedRoute roles={['faculty']}>
               <CreateQuizText />
             </ProtectedRoute>
           } />
 
-          <Route path="/create-quiz/pdf" element={
-            <ProtectedRoute roles={['teacher']}>
+          <Route path="/create-quiz/manual" element={
+            <ProtectedRoute roles={['faculty']}>
+              <CreateQuizText />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/create-quiz/file" element={
+            <ProtectedRoute roles={['faculty']}>
               <CreateQuizPDF />
             </ProtectedRoute>
           } />
 
           <Route path="/create-quiz/topic" element={
-            <ProtectedRoute roles={['teacher']}>
+            <ProtectedRoute roles={['faculty']}>
               <CreateQuizTopic />
             </ProtectedRoute>
           } />
 
 
-          <Route path="/performance" element={
-            <ProtectedRoute roles={['teacher']}>
-              <Performance />
-            </ProtectedRoute>
-          } />
+
 
           <Route path="/my-quizzes" element={
-            <ProtectedRoute roles={['teacher']}>
+            <ProtectedRoute roles={['faculty']}>
               <MyQuizzes />
             </ProtectedRoute>
           } />
 
-          <Route path="/student-dashboard" element={
+          <Route path="/join" element={
             <ProtectedRoute roles={['student']}>
-              <StudentDashboard />
+              <JoinQuiz />
             </ProtectedRoute>
           } />
 
-          <Route path="/assessments" element={
+          <Route path="/home" element={
             <ProtectedRoute roles={['student']}>
-              <Assessments />
+              <Home />
             </ProtectedRoute>
           } />
 
-          <Route path="/history" element={<Navigate to="/assessments" replace />} />
+          <Route path="/history" element={
+            <ProtectedRoute roles={['student']}>
+              <History />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/report/:id" element={
+            <ProtectedRoute roles={['student', 'admin']}>
+              <QuizReport />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/faculty-report/:id" element={
+            <ProtectedRoute roles={['faculty', 'admin']}>
+              <FacultyQuizReport />
+            </ProtectedRoute>
+          } />
 
           <Route path="/quiz/attempt/:id" element={
             <ProtectedRoute roles={['student']}>
@@ -110,9 +134,16 @@ function App() {
             </ProtectedRoute>
           } />
 
-          <Route path="/live-room-teacher/:joinCode" element={
-            <ProtectedRoute roles={['teacher']}>
-              <LiveRoomTeacher />
+          <Route path="/admin/users" element={
+            <ProtectedRoute roles={['admin']}>
+              <UserManagement />
+            </ProtectedRoute>
+          } />
+
+
+          <Route path="/live-room-faculty/:joinCode" element={
+            <ProtectedRoute roles={['faculty']}>
+              <LiveRoomFaculty />
             </ProtectedRoute>
           } />
 
@@ -123,15 +154,22 @@ function App() {
           } />
 
           <Route path="/leaderboard/:quizId" element={
-            <ProtectedRoute roles={['student', 'teacher']}>
+            <ProtectedRoute roles={['student', 'faculty']}>
               <Leaderboard />
             </ProtectedRoute>
           } />
 
-          <Route path="/" element={<Home />} />
+          <Route path="/profile" element={
+            <ProtectedRoute roles={['student', 'faculty', 'admin']}>
+              <Profile />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/" element={<HomeRedirect />} />
         </Routes>
       </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </ToastProvider>
   );
 }
 
