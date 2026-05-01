@@ -57,32 +57,33 @@ if (!fs.existsSync(uploadDir)) {
 }
 
 // Middleware
-// DEPLOYMENT READY: Improved CORS with slash handling
-const rawOrigins = [
+// DEPLOYMENT MASTER FIX: Flexible CORS for Vercel & Render
+const allowedOrigins = [
     process.env.CLIENT_URL,
-    process.env.FRONTEND_URL, 
-    'http://localhost:5173', 
+    process.env.FRONTEND_URL,
+    'https://teamkahoot-2026.vercel.app',
+    'http://localhost:5173',
     'http://localhost:3000'
-].filter(Boolean);
+].filter(Boolean).map(url => url.replace(/\/$/, ""));
 
-// Create a version of origins without trailing slashes for clean matching
-const allowedOrigins = rawOrigins.map(url => url.replace(/\/$/, ""));
-
-console.log(`🌐 CORS allowed origins:`, allowedOrigins);
+console.log(`🌐 Active CORS Origins:`, allowedOrigins);
 
 app.use(cors({
-    origin: (origin, callback) => {
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl)
         if (!origin) return callback(null, true);
         
-        // Remove trailing slash from the incoming origin if it has one
         const cleanOrigin = origin.replace(/\/$/, "");
         
-        if (allowedOrigins.includes(cleanOrigin)) {
-            return callback(null, true);
+        // Check if origin is in our list OR is a Vercel subdomain
+        const isAllowed = allowedOrigins.includes(cleanOrigin) || 
+                         cleanOrigin.endsWith('.vercel.app');
+        
+        if (isAllowed) {
+            callback(null, true);
         } else {
-            console.warn(`🚫 CORS Blocked origin: ${origin}`);
-            const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-            return callback(new Error(msg), false);
+            console.warn(`🚫 CORS BLOCKED: ${origin}`);
+            callback(new Error('Not allowed by CORS'));
         }
     },
     credentials: true,
@@ -90,51 +91,38 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'x-requested-with', 'Accept']
 }));
 
-// Security Headers - Moved after CORS
+// Relax Helmet security for cross-origin Socket.io/API usage
 app.use(helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" }, // Allow cross-origin resources
-    crossOriginOpenerPolicy: { policy: "unsafe-none" }
+    crossOriginResourcePolicy: false,
+    crossOriginOpenerPolicy: false,
+    contentSecurityPolicy: false // Disable CSP for now to ensure everything connects
 }));
 
-app.use(cookieParser()); // Parse cookies
-
-// Rate Limiting - Moved after CORS so preflight requests aren't blocked without headers
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // Limit each IP to 100 requests per windowMs
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-    message: 'Too many requests from this IP, please try again after 15 minutes'
-});
-app.use('/api/', limiter);
-
-app.use(express.json({ limit: '10kb' })); // Body size limit
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
-
-// Custom CSRF Protection Middleware
-// Since we use HttpOnly cookies, we need to prevent CSRF.
-// We'll use the 'Custom Header' approach: non-GET requests must include 'x-requested-with' header.
-app.use((req, res, next) => {
-    const protectedMethods = ['POST', 'PUT', 'DELETE', 'PATCH'];
-    if (protectedMethods.includes(req.method)) {
-        const csrfHeader = req.headers['x-requested-with'];
-        if (csrfHeader !== 'XMLHttpRequest') {
-            return res.status(403).json({ msg: 'CSRF protection: Invalid or missing header' });
-        }
-    }
-    next();
-});
+app.use(cookieParser());
+app.use(express.json({ limit: '50mb' })); // Increased limit for image uploads
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/quiz', require('./routes/quiz'));
 
+// Socket.io initialization with MASTER FIX CORS
 const io = new Server(server, {
     cors: {
-        origin: allowedOrigins,
-        methods: ["GET", "POST", "PUT", "DELETE"],
+        origin: (origin, callback) => {
+            if (!origin) return callback(null, true);
+            const cleanOrigin = origin.replace(/\/$/, "");
+            if (allowedOrigins.includes(cleanOrigin) || cleanOrigin.endsWith('.vercel.app')) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
+        methods: ["GET", "POST"],
         credentials: true
-    }
+    },
+    transports: ['polling', 'websocket'], // Allow both for better compatibility
+    allowEIO3: true
 });
 
 // DEPLOYMENT READY: Health Check for Render/Monitoring
