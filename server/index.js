@@ -15,8 +15,7 @@ const ocrService = require('./utils/ocrService');
 ocrService.initialize();
 
 if (!process.env.JWT_SECRET) {
-    console.error('❌ FATAL ERROR: JWT_SECRET is not defined in .env');
-    process.exit(1);
+    console.warn('⚠️ WARNING: JWT_SECRET is not defined. Authentication will not work properly.');
 }
 
 const app = express();
