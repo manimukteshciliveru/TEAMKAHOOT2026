@@ -258,7 +258,8 @@ export default function MyQuizzes() {
                                             </button>
                                         </div>
                                     </div>
-                                </div>
+                                )}
+                            </div>
 
 
 
