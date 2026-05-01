@@ -21,38 +21,30 @@ if (!process.env.JWT_SECRET) {
 const app = express();
 const server = http.createServer(app);
 
-// ── FINAL UNIVERSAL CORS PATCH ──
-// This must be the VERY FIRST middleware to run
+// ── ULTIMATE CONNECTION PATCH ──
+// We are hardcoding your Vercel URL to guarantee it matches
 const allowedOrigins = [
-    process.env.CLIENT_URL,
-    process.env.FRONTEND_URL,
     'https://teamkahoot-2026.vercel.app',
     'http://localhost:5173',
     'http://localhost:3000'
-].filter(Boolean).map(url => url.replace(/\/$/, ""));
+];
 
+// 1. Move CORS to the ABSOLUTE TOP
 app.use(cors({
-    origin: function (origin, callback) {
-        // Automatically allow any request from our Vercel URL or subdomains
-        if (!origin) return callback(null, true);
-        const cleanOrigin = origin.replace(/\/$/, "");
-        if (allowedOrigins.includes(cleanOrigin) || cleanOrigin.endsWith('.vercel.app')) {
+    origin: (origin, callback) => {
+        // If it's your Vercel site or localhost, say YES.
+        if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ""))) {
             return callback(null, true);
         }
-        // Fallback: allow for now to fix user block
-        callback(null, true); 
+        callback(null, true); // Fallback: allow all for now to stop the crash
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'x-requested-with', 'Accept']
 }));
 
-// Relax Helmet for deployment
-app.use(helmet({
-    crossOriginResourcePolicy: false,
-    crossOriginOpenerPolicy: false,
-    contentSecurityPolicy: false
-}));
+// 2. TEMPORARILY REMOVE HELMET (It is likely the cause of the block)
+// app.use(helmet()); 
 
 app.use(cookieParser());
 app.use(express.json({ limit: '50mb' }));
@@ -63,14 +55,13 @@ const User = require('./models/User');
 const Quiz = require('./models/Quiz');
 const Result = require('./models/Result');
 
-// Socket.io with Master Permissive Config
+// 3. Simple Socket.io Config
 const io = new Server(server, {
     cors: {
-        origin: (origin, callback) => callback(null, true), // Trust-All for Socket.io
+        origin: true, // Tells Socket.io to trust the requester's origin
         methods: ["GET", "POST"],
         credentials: true
     },
-    transports: ['polling', 'websocket'],
     allowEIO3: true
 });
 
