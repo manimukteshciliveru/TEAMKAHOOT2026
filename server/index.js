@@ -21,6 +21,9 @@ if (!process.env.JWT_SECRET) {
 const app = express();
 const server = http.createServer(app);
 
+// Connect Database
+connectDB();
+
 // ── ULTIMATE CONNECTION PATCH ──
 // We are hardcoding your Vercel URL to guarantee it matches
 const allowedOrigins = [
