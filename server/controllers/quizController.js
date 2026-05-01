@@ -12,6 +12,8 @@ const Groq = require('groq-sdk');
 const { compareAnswers } = require('../utils/helpers');
 const ocrService = require('../utils/ocrService');
 const backgroundWorker = require('../utils/backgroundWorker');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const axios = require('axios');
 const { v4: uuidv4 } = require('uuid'); // Need uuid for job tracking
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || process.env.GOOGLE_AI_API_KEY);
